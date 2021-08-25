@@ -22,7 +22,7 @@ public class Main {
         System.out.printf("%d: %d max out\n", amount, maxedCount);
     }
 
-    public static void main() {
+    public static void main(String[] args) {
         rollDice(100);
         rollDice(1000);
         rollDice(10000);
