@@ -91,6 +91,7 @@ class Keyboard extends JFrame
 }
 
 public class Main {
+    // Our main entry point, responsible for creating our Keyboard JFrame
     public static void main(String[] args) {
         // Attempt to modify the look and feel to match the native platform
         try {
