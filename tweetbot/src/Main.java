@@ -10,8 +10,6 @@ class Keyboard extends JFrame
         // Closing the window will close the entire application
         setDefaultCloseOperation(EXIT_ON_CLOSE);
 
-        //setLayout(null);
-
         // Get our frame's content pane and use a grid layout with 5 rows
         Container contentPane = getContentPane();
         contentPane.setLayout(new GridLayout(5, 0));
@@ -55,7 +53,7 @@ class Keyboard extends JFrame
     void setupKeyboardRows(Container contentPane) {
         // Keyboard row strings, which get split per-character for buttons
         String[] keyboardRows = {
-                "QWERTYUIOP",
+                "QWERTYUIOP", // Replace?
                 "ASDFGHJKL",
                 "⬆ZXCVBNM⬅"
         };
@@ -104,7 +102,7 @@ class Keyboard extends JFrame
         // For each string in our final row, create a corresponding button
         for (String text : finalRow) {
             if (text.equals("Space"))
-            {
+            { // TEMPTEMPTEMPTEMPTEMP
                 constraints.weightx = 0.4f;
             }
             else
