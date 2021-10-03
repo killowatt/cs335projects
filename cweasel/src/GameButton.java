@@ -3,21 +3,55 @@ import java.awt.*;
 
 public class GameButton extends JButton {
     public boolean isTrap = false;
+    boolean isFlagged = false;
+    boolean isRevealed = false;
+
+    public int neighborTraps = -1;
+
+    static ImageIcon trapIcon = new ImageIcon("images/trap.png");
+    static ImageIcon flagIcon = new ImageIcon("images/flag.png");
+
+    static ImageIcon[] numberIcons = new ImageIcon[]{
+            new ImageIcon("images/1.png"),
+            new ImageIcon("images/2.png"),
+            new ImageIcon("images/3.png"),
+            new ImageIcon("images/4.png"),
+            new ImageIcon("images/5.png"),
+            new ImageIcon("images/6.png"),
+            new ImageIcon("images/7.png"),
+            new ImageIcon("images/8.png")
+    };
 
     GameButton() {
         super("");
 
-        setPreferredSize(new Dimension(20, 20));
+        setPreferredSize(new Dimension(24, 24));
     }
 
     public void reveal() {
-        setBackground(new Color(0, 0, 0, 0));
+        isRevealed = true;
+        setBackground(new Color(108, 108, 108, 255));
+
+        System.out.println(neighborTraps);
+
+        if (neighborTraps - 1 >= 0)
+            setIcon(numberIcons[neighborTraps - 1]);
     }
 
     public void setTrap(boolean value) {
         isTrap = value;
         if (isTrap)
-            setIcon(new ImageIcon("images/trap.png"));
+            setIcon(trapIcon);
+        else
+            setIcon(null);
+    }
+
+    public void toggleFlag() {
+        if (isRevealed) return;
+
+        isFlagged = !isFlagged;
+        if (isFlagged)
+            setIcon(flagIcon);
         else
             setIcon(null);
     }
