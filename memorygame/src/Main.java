@@ -138,16 +138,14 @@ class MemoryGame extends JFrame {
         Container contentPane = getContentPane();
         contentPane.setLayout(new GridBagLayout());
 
-        // Set up a grid bag constraints object with some padding for our score / guesses menu
-        GridBagConstraints constraints = new GridBagConstraints();
-        constraints.ipadx = 20;
-
         // Now create our JPanel for our score, guesses & reset button
         JPanel scorePanel = new JPanel();
+
         scoreLabel = new JLabel();
+        scorePanel.add(scoreLabel);
+
         guessesLabel = new JLabel();
-        scorePanel.add(scoreLabel, constraints);
-        scorePanel.add(guessesLabel, constraints);
+        scorePanel.add(guessesLabel);
 
         // Set up our reset button, all it does is call our reset method
         JButton resetButton = new JButton("Reset");
@@ -157,10 +155,22 @@ class MemoryGame extends JFrame {
                 reset();
             }
         });
-        scorePanel.add(resetButton, constraints);
+        scorePanel.add(resetButton);
+
+        // Set up our exit button, simply calls System.exit
+        JButton exitButton = new JButton("Exit");
+        exitButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                // System.exit should clean up allocated resources automatically...
+                System.exit(0);
+            }
+        });
+        scorePanel.add(exitButton);
 
         // Reset our constraints, no padding and make sure our score panel is vertically oriented in our JFrame
-        constraints.ipadx = 0;
+        // Set up a grid bag constraints object
+        GridBagConstraints constraints = new GridBagConstraints();
         constraints.gridx = 0;
         contentPane.add(scorePanel, constraints);
 
