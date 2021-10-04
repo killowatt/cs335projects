@@ -30,16 +30,17 @@ public class GameButton extends JButton {
 
     public void reveal() {
         isRevealed = true;
-        setBackground(new Color(108, 108, 108, 255));
+        setBackground(new Color(63, 63, 63, 255));
 
-        System.out.println(neighborTraps);
-
-        if (neighborTraps - 1 >= 0)
+        if (isTrap)
+            setIcon(trapIcon);
+        else if (neighborTraps - 1 >= 0)
             setIcon(numberIcons[neighborTraps - 1]);
     }
 
     public void setTrap(boolean value) {
         isTrap = value;
+
         if (isTrap)
             setIcon(trapIcon);
         else
