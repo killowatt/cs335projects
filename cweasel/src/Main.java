@@ -1,13 +1,8 @@
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.Queue;
-import java.util.Random;
+import java.awt.event.*;
+import java.util.*;
+import java.util.Timer;
 
 class CalderaWeasel extends JFrame {
     ArrayList<GameButton> gameButtons;
@@ -15,13 +10,30 @@ class CalderaWeasel extends JFrame {
     boolean gameOver = false;
 
     int gridSize = 8;
+    int totalTraps = 12;
+
+    Timer gameTimer;
+    TimerTask timerTick;
+
+    int time = 0;
+
+    JLabel timeLabel;
 
     CalderaWeasel() {
         super("Caldera Weasel");
 
         setDefaultCloseOperation(EXIT_ON_CLOSE);
 
+
+        gameTimer = new Timer();
+        timerTick = null;
+
         gameButtons = new ArrayList<>();
+
+        JPanel scorePanel = new JPanel();
+        timeLabel = new JLabel("");
+        scorePanel.add(timeLabel);
+        scorePanel.add(new JLabel("Traps Remaining:"));
 
         JPanel gamePanel = new JPanel();
         gamePanel.setLayout(new GridLayout(gridSize, gridSize));
@@ -37,7 +49,16 @@ class CalderaWeasel extends JFrame {
                     public void mouseClicked(MouseEvent e) {
                         if (gameOver) return;
 
-                        System.out.println(finalX + " " + finalY);
+                        if (timerTick == null) {
+                            timerTick = new TimerTask() {
+                                @Override
+                                public void run() {
+                                    time++;
+                                    timeLabel.setText("Time: " + time);
+                                }
+                            };
+                            gameTimer.schedule(timerTick, 0, 1000);
+                        }
 
                         if (SwingUtilities.isLeftMouseButton(e))
                             onCellClicked(button, finalX, finalY);
@@ -53,9 +74,20 @@ class CalderaWeasel extends JFrame {
 
         setupTraps();
 
-        getContentPane().add(gamePanel);
+        Container contentPane = getContentPane();
+
+        GridBagConstraints constraints = new GridBagConstraints();
+        constraints.weighty = 0.0f;
+        constraints.gridx = 0;
+        contentPane.setLayout(new GridBagLayout());
+
+        getContentPane().add(scorePanel, constraints);
+
+        constraints.weighty = 1.0f;
+        getContentPane().add(gamePanel, constraints);
 
         JMenuBar menuBar = new JMenuBar();
+
         JMenu menu = new JMenu("Game");
         JMenuItem menuItem = new JMenuItem("Reset");
         menuItem.addActionListener(new ActionListener() {
@@ -65,9 +97,30 @@ class CalderaWeasel extends JFrame {
             }
         });
         menu.add(menuItem);
+
+        JMenu difficultySubmenu = new JMenu("Difficulty");
+        difficultySubmenu.setMnemonic(KeyEvent.VK_D);
+        difficultySubmenu.add(new JMenuItem("Easy"));
+        difficultySubmenu.add(new JMenuItem("Medium"));
+        difficultySubmenu.add(new JMenuItem("Hard"));
+        difficultySubmenu.add(new JMenuItem("Custom"));
+        menu.add(difficultySubmenu);
+
+        menu.addSeparator();
+
+        JMenuItem exitButton = new JMenuItem("Exit");
+        menu.add(exitButton);
+
         menuBar.add(menu);
-        menuBar.add(new JLabel("Timer:"));
+
+        JMenu helpMenu = new JMenu("Help");
+        helpMenu.add(new JMenuItem("About"));
+        menuBar.add(helpMenu);
+
         setJMenuBar(menuBar);
+
+        ImageIcon frameIcon = new ImageIcon("images/flag.png");
+        setIconImage(frameIcon.getImage());
 
         pack();
         setLocationRelativeTo(null);
@@ -86,6 +139,8 @@ class CalderaWeasel extends JFrame {
         if (gameButton.isTrap) {
             System.out.println("Game over");
 
+            gameButton.setBackground(Color.red);
+
             gameOver = true;
             for (GameButton b : gameButtons) {
                 b.setEnabled(false);
@@ -103,93 +158,67 @@ class CalderaWeasel extends JFrame {
         }
     }
 
-    boolean isGridTrap(int x, int y) {
+    GameButton getTile(int x, int y) {
         if (x >= gridSize || x < 0 || y >= gridSize || y < 0)
-            return false;
+            return null;
 
         int index = x * gridSize + y;
         if (index >= gameButtons.size() || index < 0)
-            return false;
+            return null;
 
-        return gameButtons.get(index).isTrap;
+        return gameButtons.get(index);
     }
 
-    void tryAdd(Queue<GameButton> queue, boolean[] visited, int x, int y) {
-        if (x >= gridSize || x < 0 || y >= gridSize || y < 0)
-            return;
+    boolean isGridTrap(int x, int y) {
+        GameButton button = getTile(x, y);
+        if (button == null) return false;
 
-        System.out.println("TEST: " + x + " " + y);
+        return button.isTrap;
+    }
+
+    void tryAddToRevealQueue(Queue<GameButton> queue, boolean[] visited, int x, int y) {
+        GameButton button = getTile(x, y);
+        if (button == null)
+            return;
 
         int index = x * gridSize + y;
-        if (index >= gameButtons.size() || index < 0)
-            return;
-
         if (visited[index])
             return;
-
-        GameButton button = gameButtons.get(index);
 
         visited[index] = true;
         queue.add(button);
 
         if (button.neighborTraps > 0) {
             return;
-
         }
 
-        tryAdd(queue, visited,x - 1, y - 1);
-        tryAdd(queue, visited,x, y - 1);
-        tryAdd(queue, visited,x + 1, y - 1);
+        tryAddToRevealQueue(queue, visited, x - 1, y - 1);
+        tryAddToRevealQueue(queue, visited, x, y - 1);
+        tryAddToRevealQueue(queue, visited, x + 1, y - 1);
 
-        tryAdd(queue, visited,x - 1, y);
-        tryAdd(queue, visited,x + 1, y);
+        tryAddToRevealQueue(queue, visited, x - 1, y);
+        tryAddToRevealQueue(queue, visited, x + 1, y);
 
-        tryAdd(queue, visited,x - 1, y + 1);
-        tryAdd(queue, visited,x, y + 1);
-        tryAdd(queue, visited,x + 1, y + 1);
+        tryAddToRevealQueue(queue, visited, x - 1, y + 1);
+        tryAddToRevealQueue(queue, visited, x, y + 1);
+        tryAddToRevealQueue(queue, visited, x + 1, y + 1);
     }
 
     void tryReveal(int x, int y) {
-        if (x >= gridSize || x < 0 || y >= gridSize || y < 0)
+        GameButton button = getTile(x, y);
+        if (button == null)
             return;
 
-        int index = x * gridSize + y;
-        if (index >= gameButtons.size() || index < 0)
-            return;
-
-        GameButton button = gameButtons.get(index);
         if (button.isRevealed)
             return;
 
-        //button.reveal();
-        button.setBackground(Color.cyan);
-
-        Queue<GameButton> buttons = new LinkedList<>();
+        Queue<GameButton> queue = new LinkedList<>();
         boolean[] visited = new boolean[gridSize * gridSize];
 
-        buttons.add(button);
+        tryAddToRevealQueue(queue, visited, x, y);
 
-
-        if (button.neighborTraps > 0) {
-            button.reveal();
-            return;
-        }
-
-        //while (buttons.isEmpty()) {
-            tryAdd(buttons, visited,x - 1, y - 1);
-            tryAdd(buttons, visited,x, y - 1);
-            tryAdd(buttons, visited,x + 1, y - 1);
-
-            tryAdd(buttons, visited,x - 1, y);
-            tryAdd(buttons, visited,x + 1, y);
-
-            tryAdd(buttons, visited,x - 1, y + 1);
-            tryAdd(buttons, visited,x, y + 1);
-            tryAdd(buttons, visited,x + 1, y + 1);
-        //}
-
-        while(!buttons.isEmpty()) {
-            GameButton b = buttons.remove();
+        while (!queue.isEmpty()) {
+            GameButton b = queue.remove();
             b.reveal();
         }
     }
@@ -203,10 +232,7 @@ class CalderaWeasel extends JFrame {
         gameOver = false;
 
         for (GameButton b : gameButtons) {
-            b.setEnabled(true);
-            b.setTrap(false);
-
-            b.setBackground(null);
+            b.reset();
         }
 
         setupTraps();
@@ -217,13 +243,15 @@ class CalderaWeasel extends JFrame {
     }
 
     void setupTraps() {
-        int numTraps = 12;
+        int remainingTraps = totalTraps;
+
         Random random = new Random();
-        while (numTraps > 0) {
+        while (remainingTraps > 0) {
             int index = random.nextInt(gameButtons.size());
+
             if (!gameButtons.get(index).isTrap) {
                 gameButtons.get(index).setTrap(true);
-                numTraps--;
+                remainingTraps--;
             }
         }
 
@@ -247,7 +275,6 @@ class CalderaWeasel extends JFrame {
             }
         }
     }
-
 }
 
 public class Main {

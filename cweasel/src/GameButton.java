@@ -28,6 +28,16 @@ public class GameButton extends JButton {
         setPreferredSize(new Dimension(24, 24));
     }
 
+    public void reset() {
+        isTrap = false;
+        isRevealed = false;
+        isFlagged = false;
+
+        setIcon(null);
+        setBackground(null);
+        setEnabled(true);
+    }
+
     public void reveal() {
         isRevealed = true;
         setBackground(new Color(63, 63, 63, 255));
