@@ -48,6 +48,8 @@ public class GameButton extends JButton {
             setIcon(trapIcon);
         else if (neighborTraps - 1 >= 0)
             setIcon(numberIcons[neighborTraps - 1]);
+        else
+            setIcon(null);
     }
 
     public void setTrap(boolean value) {

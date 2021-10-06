@@ -263,6 +263,9 @@ class CalderaWeasel extends JFrame {
     }
 
     void onCellClicked(GameButton gameButton, int x, int y) {
+        if (gameButton.isFlagged)
+            return;
+
         if (!moveMade) {
             setupTraps(x, y);
             moveMade = true;
@@ -275,14 +278,16 @@ class CalderaWeasel extends JFrame {
             }
 
             JOptionPane.showInternalMessageDialog(null, "You lose :(", "Game Over",
-                    JOptionPane.PLAIN_MESSAGE);
-
-            gameButton.setBackground(new Color(255, 0, 0, 255)); // ?? not work
+                    JOptionPane.ERROR_MESSAGE);
 
             gameOver = true;
             for (GameButton b : gameButtons) {
+                b.reveal();
                 b.setEnabled(false);
             }
+            gameButton.setBackground(Color.red);
+
+            return; // Don't win after all things are revealed!
         }
 
         tryReveal(x, y);
@@ -295,9 +300,10 @@ class CalderaWeasel extends JFrame {
             }
 
             JOptionPane.showInternalMessageDialog(null, "You win!", "Game Over",
-                    JOptionPane.PLAIN_MESSAGE);
+                    JOptionPane.INFORMATION_MESSAGE);
 
             for (GameButton b : gameButtons) {
+                b.reveal();
                 b.setEnabled(false);
             }
         }
@@ -445,7 +451,6 @@ class CalderaWeasel extends JFrame {
 
                 gameButtons.add(button);
                 gamePanel.add(button);
-                //button.setBackground(new Color(x * (255 / gridWidth), y * (255 / gridHeight), 0, 255));
             }
         }
     }
