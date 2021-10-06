@@ -37,6 +37,8 @@ class CalderaWeasel extends JFrame {
     Timer gameTimer;
     TimerTask timerTick;
 
+    boolean moveMade = false;
+
     JLabel timeLabel;
 
     CalderaWeasel() {
@@ -60,7 +62,7 @@ class CalderaWeasel extends JFrame {
 
         setupBoard();
 
-        setupTraps();
+        //setupTraps();
 
         Container contentPane = getContentPane();
 
@@ -145,6 +147,10 @@ class CalderaWeasel extends JFrame {
         setVisible(true);
     }
 
+    int getGridIndex(int x, int y) {
+        return x * gridWidth + y;
+    }
+
     boolean evaluateWin() {
         for (GameButton b : gameButtons) {
             if (!b.isRevealed && !b.isTrap)
@@ -154,6 +160,11 @@ class CalderaWeasel extends JFrame {
     }
 
     void onCellClicked(GameButton gameButton, int x, int y) {
+        if (!moveMade) {
+            setupTraps(x, y);
+            moveMade = true;
+        }
+
         if (gameButton.isTrap) {
             System.out.println("Game over");
 
@@ -180,7 +191,7 @@ class CalderaWeasel extends JFrame {
         if (x >= gridWidth || x < 0 || y >= gridHeight || y < 0)
             return null;
 
-        int index = x * gridWidth + y;
+        int index = getGridIndex(x, y);
         if (index >= gameButtons.size() || index < 0)
             return null;
 
@@ -199,7 +210,7 @@ class CalderaWeasel extends JFrame {
         if (button == null)
             return;
 
-        int index = x * gridWidth + y;
+        int index = getGridIndex(x, y);
         if (visited[index])
             return;
 
@@ -248,13 +259,14 @@ class CalderaWeasel extends JFrame {
 
     void reset() {
         gameOver = false;
+        moveMade = false;
 
         gridWidth = difficulty.gridSizeX;
         gridHeight = difficulty.gridSizeY;
         totalTraps = difficulty.totalTraps;
 
         setupBoard();
-        setupTraps();
+        //setupTraps();
 
         pack();
     }
@@ -300,12 +312,17 @@ class CalderaWeasel extends JFrame {
         }
     }
 
-    void setupTraps() {
+    void setupTraps(int avoidX, int avoidY) {
         int remainingTraps = totalTraps;
+
+        int avoidIndex = getGridIndex(avoidX, avoidY);
 
         Random random = new Random();
         while (remainingTraps > 0) {
             int index = random.nextInt(gameButtons.size());
+
+            if (index == avoidIndex)
+                continue;
 
             if (!gameButtons.get(index).isTrap) {
                 gameButtons.get(index).setTrap(true);
@@ -315,7 +332,7 @@ class CalderaWeasel extends JFrame {
 
         for (int x = 0; x < gridWidth; x++) {
             for (int y = 0; y < gridHeight; y++) {
-                int index = x * gridWidth + y;
+                int index = getGridIndex(x, y);
 
                 int count = 0;
                 if (isGridTrap(x - 1, y - 1)) count++;
