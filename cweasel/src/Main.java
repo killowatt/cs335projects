@@ -4,18 +4,38 @@ import java.awt.event.*;
 import java.util.*;
 import java.util.Timer;
 
-class CalderaWeasel extends JFrame {
-    ArrayList<GameButton> gameButtons;
+class GameDifficulty {
+    public int gridSizeX;
+    public int gridSizeY;
+    public int totalTraps;
 
+    GameDifficulty(int gridSizeX, int gridSizeY, int totalTraps) {
+        this.gridSizeX = gridSizeX;
+        this.gridSizeY = gridSizeY;
+        this.totalTraps = totalTraps;
+    }
+
+    static final GameDifficulty Beginner = new GameDifficulty(4, 4, 5);
+    static final GameDifficulty Intermediate = new GameDifficulty(8, 8, 14);
+    static final GameDifficulty Expert = new GameDifficulty(15, 15, 60);
+}
+
+class CalderaWeasel extends JFrame {
     boolean gameOver = false;
 
-    int gridSize = 8;
-    int totalTraps = 12;
+    int gridWidth = 8;
+    int gridHeight = 8;
+    int totalTraps = 14;
+
+    GameDifficulty difficulty;
+
+    ArrayList<GameButton> gameButtons;
+    JPanel gamePanel;
+
+    int time = 0;
 
     Timer gameTimer;
     TimerTask timerTick;
-
-    int time = 0;
 
     JLabel timeLabel;
 
@@ -24,6 +44,7 @@ class CalderaWeasel extends JFrame {
 
         setDefaultCloseOperation(EXIT_ON_CLOSE);
 
+        difficulty = GameDifficulty.Intermediate;
 
         gameTimer = new Timer();
         timerTick = null;
@@ -35,42 +56,9 @@ class CalderaWeasel extends JFrame {
         scorePanel.add(timeLabel);
         scorePanel.add(new JLabel("Traps Remaining:"));
 
-        JPanel gamePanel = new JPanel();
-        gamePanel.setLayout(new GridLayout(gridSize, gridSize));
+        gamePanel = new JPanel();
 
-        for (int x = 0; x < gridSize; x++) {
-            for (int y = 0; y < gridSize; y++) {
-                GameButton button = new GameButton();
-
-                int finalX = x;
-                int finalY = y;
-                button.addMouseListener(new MouseAdapter() {
-                    @Override
-                    public void mouseClicked(MouseEvent e) {
-                        if (gameOver) return;
-
-                        if (timerTick == null) {
-                            timerTick = new TimerTask() {
-                                @Override
-                                public void run() {
-                                    time++;
-                                    timeLabel.setText("Time: " + time);
-                                }
-                            };
-                            gameTimer.schedule(timerTick, 0, 1000);
-                        }
-
-                        if (SwingUtilities.isLeftMouseButton(e))
-                            onCellClicked(button, finalX, finalY);
-                        else if (SwingUtilities.isRightMouseButton(e))
-                            onCellFlagged(button);
-                    }
-                });
-
-                gameButtons.add(button);
-                gamePanel.add(button);
-            }
-        }
+        setupBoard();
 
         setupTraps();
 
@@ -100,10 +88,40 @@ class CalderaWeasel extends JFrame {
 
         JMenu difficultySubmenu = new JMenu("Difficulty");
         difficultySubmenu.setMnemonic(KeyEvent.VK_D);
-        difficultySubmenu.add(new JMenuItem("Easy"));
-        difficultySubmenu.add(new JMenuItem("Medium"));
-        difficultySubmenu.add(new JMenuItem("Hard"));
-        difficultySubmenu.add(new JMenuItem("Custom"));
+
+        JMenuItem beginnerItem = new JMenuItem(new AbstractAction("Beginner") {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                difficulty = GameDifficulty.Beginner;
+            }
+        });
+        difficultySubmenu.add(beginnerItem);
+
+        JMenuItem intermediateItem = new JMenuItem(new AbstractAction("Intermediate") {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                difficulty = GameDifficulty.Intermediate;
+            }
+        });
+        difficultySubmenu.add(intermediateItem);
+
+        JMenuItem expertItem = new JMenuItem(new AbstractAction("Expert") {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                difficulty = GameDifficulty.Expert;
+            }
+        });
+        difficultySubmenu.add(expertItem);
+
+        JMenuItem customItem = new JMenuItem(new AbstractAction("Custom") {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                //
+            }
+        });
+        difficultySubmenu.add(customItem);
+
+
         menu.add(difficultySubmenu);
 
         menu.addSeparator();
@@ -159,10 +177,10 @@ class CalderaWeasel extends JFrame {
     }
 
     GameButton getTile(int x, int y) {
-        if (x >= gridSize || x < 0 || y >= gridSize || y < 0)
+        if (x >= gridWidth || x < 0 || y >= gridHeight || y < 0)
             return null;
 
-        int index = x * gridSize + y;
+        int index = x * gridWidth + y;
         if (index >= gameButtons.size() || index < 0)
             return null;
 
@@ -181,7 +199,7 @@ class CalderaWeasel extends JFrame {
         if (button == null)
             return;
 
-        int index = x * gridSize + y;
+        int index = x * gridWidth + y;
         if (visited[index])
             return;
 
@@ -213,7 +231,7 @@ class CalderaWeasel extends JFrame {
             return;
 
         Queue<GameButton> queue = new LinkedList<>();
-        boolean[] visited = new boolean[gridSize * gridSize];
+        boolean[] visited = new boolean[gridWidth * gridHeight];
 
         tryAddToRevealQueue(queue, visited, x, y);
 
@@ -231,15 +249,55 @@ class CalderaWeasel extends JFrame {
     void reset() {
         gameOver = false;
 
-        for (GameButton b : gameButtons) {
-            b.reset();
-        }
+        gridWidth = difficulty.gridSizeX;
+        gridHeight = difficulty.gridSizeY;
+        totalTraps = difficulty.totalTraps;
 
+        setupBoard();
         setupTraps();
+
+        pack();
     }
 
     void setupBoard() {
+        gamePanel.removeAll();
+        gameButtons.clear();
 
+        gamePanel.setLayout(new GridLayout(gridWidth, gridHeight));
+
+        for (int x = 0; x < gridWidth; x++) {
+            for (int y = 0; y < gridHeight; y++) {
+                GameButton button = new GameButton();
+
+                int finalX = x;
+                int finalY = y;
+                button.addMouseListener(new MouseAdapter() {
+                    @Override
+                    public void mouseClicked(MouseEvent e) {
+                        if (gameOver) return;
+
+                        if (timerTick == null) {
+                            timerTick = new TimerTask() {
+                                @Override
+                                public void run() {
+                                    time++;
+                                    timeLabel.setText("Time: " + time);
+                                }
+                            };
+                            gameTimer.schedule(timerTick, 0, 1000);
+                        }
+
+                        if (SwingUtilities.isLeftMouseButton(e))
+                            onCellClicked(button, finalX, finalY);
+                        else if (SwingUtilities.isRightMouseButton(e))
+                            onCellFlagged(button);
+                    }
+                });
+
+                gameButtons.add(button);
+                gamePanel.add(button);
+            }
+        }
     }
 
     void setupTraps() {
@@ -255,9 +313,9 @@ class CalderaWeasel extends JFrame {
             }
         }
 
-        for (int x = 0; x < gridSize; x++) {
-            for (int y = 0; y < gridSize; y++) {
-                int index = x * gridSize + y;
+        for (int x = 0; x < gridWidth; x++) {
+            for (int y = 0; y < gridHeight; y++) {
+                int index = x * gridWidth + y;
 
                 int count = 0;
                 if (isGridTrap(x - 1, y - 1)) count++;
