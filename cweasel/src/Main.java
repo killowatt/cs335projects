@@ -5,13 +5,13 @@ import java.util.*;
 import java.util.Timer;
 
 class GameDifficulty {
-    public int gridSizeX;
-    public int gridSizeY;
+    public int gridWidth;
+    public int gridHeight;
     public int totalTraps;
 
-    GameDifficulty(int gridSizeX, int gridSizeY, int totalTraps) {
-        this.gridSizeX = gridSizeX;
-        this.gridSizeY = gridSizeY;
+    GameDifficulty(int gridWidth, int gridHeight, int totalTraps) {
+        this.gridWidth = gridWidth;
+        this.gridHeight = gridHeight;
         this.totalTraps = totalTraps;
     }
 
@@ -58,11 +58,11 @@ class CalderaWeasel extends JFrame {
         scorePanel.add(timeLabel);
         scorePanel.add(new JLabel("Traps Remaining:"));
 
+        updateTimerLabel();
+
         gamePanel = new JPanel();
 
         setupBoard();
-
-        //setupTraps();
 
         Container contentPane = getContentPane();
 
@@ -261,14 +261,25 @@ class CalderaWeasel extends JFrame {
         gameOver = false;
         moveMade = false;
 
-        gridWidth = difficulty.gridSizeX;
-        gridHeight = difficulty.gridSizeY;
+        if (timerTick != null) {
+            timerTick.cancel();
+            timerTick = null;
+        }
+        time = 0;
+        updateTimerLabel();
+
+        gridWidth = difficulty.gridWidth;
+        gridHeight = difficulty.gridHeight;
         totalTraps = difficulty.totalTraps;
 
         setupBoard();
         //setupTraps();
 
         pack();
+    }
+
+    void updateTimerLabel() {
+        timeLabel.setText("Time: " + time);
     }
 
     void setupBoard() {
@@ -289,11 +300,12 @@ class CalderaWeasel extends JFrame {
                         if (gameOver) return;
 
                         if (timerTick == null) {
+                            time = -1; // hack
                             timerTick = new TimerTask() {
                                 @Override
                                 public void run() {
                                     time++;
-                                    timeLabel.setText("Time: " + time);
+                                    updateTimerLabel();
                                 }
                             };
                             gameTimer.schedule(timerTick, 0, 1000);
