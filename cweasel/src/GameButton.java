@@ -2,6 +2,8 @@ import javax.swing.*;
 import java.awt.*;
 
 public class GameButton extends JButton {
+    public static boolean cheatMode = false;
+
     public boolean isTrap = false;
     boolean isFlagged = false;
     boolean isRevealed = false;
@@ -51,19 +53,28 @@ public class GameButton extends JButton {
     public void setTrap(boolean value) {
         isTrap = value;
 
-        if (isTrap)
+        checkCheats();
+    }
+
+    public void checkCheats() {
+        if (!isTrap || isFlagged) return;
+
+        if (cheatMode)
             setIcon(trapIcon);
         else
             setIcon(null);
     }
 
-    public void toggleFlag() {
-        if (isRevealed) return;
+    public int toggleFlag() {
+        if (isRevealed) return 0;
 
         isFlagged = !isFlagged;
         if (isFlagged)
             setIcon(flagIcon);
         else
             setIcon(null);
+
+        checkCheats();
+        return isFlagged ? -1 : 1;
     }
 }

@@ -1,8 +1,74 @@
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
-import java.util.*;
+import java.text.ParseException;
+import java.util.Queue;
 import java.util.Timer;
+import java.util.*;
+
+class HowToPlay extends JPanel {
+    HowToPlay() {
+        setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
+
+        add(new JLabel("Rules"));
+        add(new JLabel("The goal of the Caldera Weasel game is to avoid thermal traps."));
+        add(new JLabel("You do this by looking at the numbers in each cell."));
+        add(new JLabel("This number represents the number of surrounding cells that are traps."));
+        add(new JLabel("You win by avoiding all of the traps and revealing every non-trap space!"));
+        add(new JLabel(" "));
+        add(new JLabel("Reset"));
+        add(new JLabel("After a game over, you can start a new game by going to the menu bar and selecting"));
+        add(new JLabel("Game > Reset."));
+        add(new JLabel(" "));
+        add(new JLabel("Cheat Mode"));
+        add(new JLabel("Cheat mode allows you to see which spaces are traps by revealing their icons."));
+        add(new JLabel("Your first move is always guaranteed to be safe, so they will not appear until after"));
+        add(new JLabel("you've made your first move!"));
+    }
+}
+
+class DifficultyDialog extends JPanel {
+    JSpinner widthSpinner;
+    JSpinner heightSpinner;
+    JSpinner trapsSpinner;
+
+    DifficultyDialog() {
+        setLayout(new GridLayout(3, 2));
+
+        SpinnerNumberModel widthModel = new SpinnerNumberModel(8, 4, 32, 1);
+        widthSpinner = new JSpinner(widthModel);
+
+        SpinnerNumberModel heightModel = new SpinnerNumberModel(8, 4, 32, 1);
+        heightSpinner = new JSpinner(heightModel);
+
+        SpinnerNumberModel trapsModel = new SpinnerNumberModel(14, 1, 32, 1);
+        trapsSpinner = new JSpinner(trapsModel);
+
+        add(new JLabel("Grid Width:"));
+        add(widthSpinner);
+
+        add(new JLabel("Grid Height:"));
+        add(heightSpinner);
+
+        add(new JLabel("Total Traps:"));
+        add(trapsSpinner);
+    }
+
+    GameDifficulty getDifficulty() {
+        try {
+            widthSpinner.commitEdit();
+            heightSpinner.commitEdit();
+            trapsSpinner.commitEdit();
+        } catch (ParseException e) {
+            System.out.println("Bad difficulty input");
+            return GameDifficulty.Intermediate;
+        }
+
+        return new GameDifficulty((int) widthSpinner.getValue(),
+                (int) heightSpinner.getValue(),
+                (int) trapsSpinner.getValue());
+    }
+}
 
 class GameDifficulty {
     public int gridWidth;
@@ -33,6 +99,7 @@ class CalderaWeasel extends JFrame {
     JPanel gamePanel;
 
     int time = 0;
+    int trapsRemaining = 0;
 
     Timer gameTimer;
     TimerTask timerTick;
@@ -40,6 +107,12 @@ class CalderaWeasel extends JFrame {
     boolean moveMade = false;
 
     JLabel timeLabel;
+    JLabel trapsLabel;
+
+    static final Object[] aboutDialog = {
+            "Caldera Weasel project for CS335",
+            "Created by William Yates"
+    };
 
     CalderaWeasel() {
         super("Caldera Weasel");
@@ -55,14 +128,15 @@ class CalderaWeasel extends JFrame {
 
         JPanel scorePanel = new JPanel();
         timeLabel = new JLabel("");
+        trapsLabel = new JLabel("");
         scorePanel.add(timeLabel);
-        scorePanel.add(new JLabel("Traps Remaining:"));
+        scorePanel.add(trapsLabel);
 
         updateTimerLabel();
 
         gamePanel = new JPanel();
 
-        setupBoard();
+        reset();
 
         Container contentPane = getContentPane();
 
@@ -79,8 +153,7 @@ class CalderaWeasel extends JFrame {
         JMenuBar menuBar = new JMenuBar();
 
         JMenu menu = new JMenu("Game");
-        JMenuItem menuItem = new JMenuItem("Reset");
-        menuItem.addActionListener(new ActionListener() {
+        JMenuItem menuItem = new JMenuItem(new AbstractAction("Reset") {
             @Override
             public void actionPerformed(ActionEvent e) {
                 reset();
@@ -118,13 +191,27 @@ class CalderaWeasel extends JFrame {
         JMenuItem customItem = new JMenuItem(new AbstractAction("Custom") {
             @Override
             public void actionPerformed(ActionEvent e) {
-                //
+                DifficultyDialog difficultyDialog = new DifficultyDialog();
+                JOptionPane.showInternalMessageDialog(null, difficultyDialog, "Difficulty", JOptionPane.PLAIN_MESSAGE);
+                difficulty = difficultyDialog.getDifficulty();
             }
         });
         difficultySubmenu.add(customItem);
 
 
         menu.add(difficultySubmenu);
+
+        JCheckBoxMenuItem cheatMenuItem = new JCheckBoxMenuItem("Cheat Mode");
+        cheatMenuItem.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                GameButton.cheatMode = cheatMenuItem.getState();
+                for (GameButton button : gameButtons) {
+                    button.checkCheats();
+                }
+            }
+        });
+        menu.add(cheatMenuItem);
 
         menu.addSeparator();
 
@@ -134,7 +221,23 @@ class CalderaWeasel extends JFrame {
         menuBar.add(menu);
 
         JMenu helpMenu = new JMenu("Help");
-        helpMenu.add(new JMenuItem("About"));
+
+        JMenuItem howToItem = new JMenuItem(new AbstractAction("How to play") {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                JOptionPane.showInternalMessageDialog(null, new HowToPlay(), "How to Play", JOptionPane.PLAIN_MESSAGE);
+            }
+        });
+        helpMenu.add(howToItem);
+
+        JMenuItem aboutItem = new JMenuItem(new AbstractAction("About") {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                JOptionPane.showInternalMessageDialog(null, aboutDialog, "About", JOptionPane.PLAIN_MESSAGE);
+            }
+        });
+        helpMenu.add(aboutItem);
+
         menuBar.add(helpMenu);
 
         setJMenuBar(menuBar);
@@ -148,7 +251,7 @@ class CalderaWeasel extends JFrame {
     }
 
     int getGridIndex(int x, int y) {
-        return x * gridWidth + y;
+        return y * gridWidth + x;
     }
 
     boolean evaluateWin() {
@@ -166,9 +269,15 @@ class CalderaWeasel extends JFrame {
         }
 
         if (gameButton.isTrap) {
-            System.out.println("Game over");
+            if (timerTick != null) {
+                timerTick.cancel();
+                timerTick = null;
+            }
 
-            gameButton.setBackground(Color.red);
+            JOptionPane.showInternalMessageDialog(null, "You lose :(", "Game Over",
+                    JOptionPane.PLAIN_MESSAGE);
+
+            gameButton.setBackground(new Color(255, 0, 0, 255)); // ?? not work
 
             gameOver = true;
             for (GameButton b : gameButtons) {
@@ -180,7 +289,14 @@ class CalderaWeasel extends JFrame {
         gameButton.reveal();
 
         if (evaluateWin()) {
-            System.out.println("You win!!");
+            if (timerTick != null) {
+                timerTick.cancel();
+                timerTick = null;
+            }
+
+            JOptionPane.showInternalMessageDialog(null, "You win!", "Game Over",
+                    JOptionPane.PLAIN_MESSAGE);
+
             for (GameButton b : gameButtons) {
                 b.setEnabled(false);
             }
@@ -253,13 +369,23 @@ class CalderaWeasel extends JFrame {
     }
 
     void onCellFlagged(GameButton gameButton) {
-        System.out.println("hey");
-        gameButton.toggleFlag();
+        int flagged = gameButton.toggleFlag();
+
+        trapsRemaining += flagged;
+        updateTrapsLabel();
+    }
+
+    void updateTrapsLabel() {
+        trapsLabel.setText("Traps remaining: " + trapsRemaining);
     }
 
     void reset() {
         gameOver = false;
         moveMade = false;
+
+        gridWidth = difficulty.gridWidth;
+        gridHeight = difficulty.gridHeight;
+        totalTraps = difficulty.totalTraps;
 
         if (timerTick != null) {
             timerTick.cancel();
@@ -268,9 +394,8 @@ class CalderaWeasel extends JFrame {
         time = 0;
         updateTimerLabel();
 
-        gridWidth = difficulty.gridWidth;
-        gridHeight = difficulty.gridHeight;
-        totalTraps = difficulty.totalTraps;
+        trapsRemaining = totalTraps;
+        updateTrapsLabel();
 
         setupBoard();
         //setupTraps();
@@ -286,10 +411,10 @@ class CalderaWeasel extends JFrame {
         gamePanel.removeAll();
         gameButtons.clear();
 
-        gamePanel.setLayout(new GridLayout(gridWidth, gridHeight));
+        gamePanel.setLayout(new GridLayout(gridHeight, gridWidth));
 
-        for (int x = 0; x < gridWidth; x++) {
-            for (int y = 0; y < gridHeight; y++) {
+        for (int y = 0; y < gridHeight; y++) {
+            for (int x = 0; x < gridWidth; x++) {
                 GameButton button = new GameButton();
 
                 int finalX = x;
@@ -320,11 +445,16 @@ class CalderaWeasel extends JFrame {
 
                 gameButtons.add(button);
                 gamePanel.add(button);
+                //button.setBackground(new Color(x * (255 / gridWidth), y * (255 / gridHeight), 0, 255));
             }
         }
     }
 
     void setupTraps(int avoidX, int avoidY) {
+        int gridArea = gridWidth * gridHeight;
+        if (totalTraps >= gridArea)
+            totalTraps = gridArea - 1;
+
         int remainingTraps = totalTraps;
 
         int avoidIndex = getGridIndex(avoidX, avoidY);
