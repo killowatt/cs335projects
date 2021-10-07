@@ -4,6 +4,8 @@ import java.awt.*;
 // Game button class that holds a cell's current state
 class GameButton extends JButton {
     // Tracks the state of this button, if it's a trap, if it's flagged, if it's revealed
+    // I would make getters for these since leaving them public like this can easily lead to programmer error, but
+    // it currently is not a problem
     boolean isTrap = false;
     boolean isFlagged = false;
     boolean isRevealed = false;
@@ -60,7 +62,8 @@ class GameButton extends JButton {
     // Cheat state check
     public void checkCheats() {
         // Ignore non-traps and flagged spots
-        if (!isTrap || isFlagged) return;
+        if (!isTrap || isFlagged)
+            return;
 
         // If cheat mode is enabled, always show the trap icon
         if (cheatMode)
@@ -73,7 +76,8 @@ class GameButton extends JButton {
     // traps counter should be modified
     public int toggleFlag() {
         // If this is already revealed, nothing should change
-        if (isRevealed) return 0;
+        if (isRevealed)
+            return 0;
 
         // Toggle the flagged flag
         isFlagged = !isFlagged;

@@ -6,11 +6,21 @@ import java.util.Queue;
 import java.util.Timer;
 import java.util.*;
 
+// Assumptions / Extras
+// *    This does implement the flag feature with a counter
+// *    The spec says we only use square grids, but this supports rectangular grids
+// *    This also has a cheat mode that reveals all traps once a move has been made
+// *    This has an extra "about" screen under the help menu bar sub-menu
+
 // Known issues
 // *    Sometimes button clicks can seem unresponsive, but this is because of subtle dragging of the mouse.
 //      I am considering this a feature however since it can help the player avoid unwanted clicks.
-// *    Extremely rarely when clicking a button, by setting the buttons icon, button sizes change oddly.
+// *    Extremely rarely as the timer increments the layout of the board can get stretched due to resizing.
 //      This doesn't stop gameplay and the layout can be returned to normal by resizing the window.
+// *    Although the first guess is always guaranteed to be a safe one, you can still be put into a situation
+//      where you immediately have to make another random guess anyway. I assume this is OK since that goes beyond
+//      what the spec says is necessary
+// *    When a flagged cell is revealed and it isn't a mine, the traps remaining counter is not updated
 
 // Main game class responsible for running game logic
 class CalderaWeasel extends JFrame {
@@ -18,11 +28,11 @@ class CalderaWeasel extends JFrame {
     boolean gameOver = false;
 
     // The current grid width & height in cells
-    int gridWidth = 8;
-    int gridHeight = 8;
+    int gridWidth;
+    int gridHeight;
 
     // The current total number of traps that should be on the board
-    int totalTraps = 14;
+    int totalTraps;
 
     // The game difficulty set by the player; above values are set to the internal values of this on reset
     // Set to intermediate by default
@@ -125,7 +135,8 @@ class CalderaWeasel extends JFrame {
     // Helper method to check if a specific cell is a trap
     boolean isCellTrap(int x, int y) {
         GameButton button = getTile(x, y);
-        if (button == null) return false;
+        if (button == null)
+            return false;
 
         return button.isTrap;
     }
@@ -162,7 +173,8 @@ class CalderaWeasel extends JFrame {
                     @Override
                     public void mouseClicked(MouseEvent e) {
                         // Ignore clicks when the game is over
-                        if (gameOver) return;
+                        if (gameOver)
+                            return;
 
                         // If we haven't started a timer, start one!
                         if (timerTick == null) {
