@@ -1,103 +1,17 @@
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
-import java.util.ArrayList;
-
-class PolygonPanel extends JPanel {
-    ArrayList<Rectangle> handles;
-    boolean fill = false;
-
-    Rectangle currentHandle = null;
-
-    PolygonPanel() {
-        super();
-
-        handles = new ArrayList<>();
-
-        setBackground(Color.black);
-
-        setPreferredSize(new Dimension(256, 256));
-
-        addMouseListener(new MouseAdapter() {
-            @Override
-            public void mousePressed(MouseEvent e) {
-                final int x = e.getX();
-                final int y = e.getY();
-
-                for (Rectangle rectangle : handles) {
-                    System.out.println(x + " " + y);
-                    if (rectangle.contains(x, y)) {
-                        if (SwingUtilities.isLeftMouseButton(e)) {
-                            currentHandle = rectangle;
-                        }
-                        else if (SwingUtilities.isRightMouseButton(e)) {
-                            handles.remove(rectangle);
-                            repaint();
-                        }
-
-                        return;
-                    }
-                }
-
-                if (SwingUtilities.isLeftMouseButton(e)) {
-                    handles.add(new Rectangle(x, y, 12, 12));
-                    repaint();
-                }
-            }
-
-            @Override
-            public void mouseReleased(MouseEvent e) {
-                currentHandle = null;
-            }
-        });
-
-        addMouseMotionListener(new MouseMotionAdapter() {
-            @Override
-            public void mouseDragged(MouseEvent e) {
-                if (currentHandle == null)
-                    return;
-
-                currentHandle.x = e.getX() - 6;
-                currentHandle.y = e.getY() - 6;
-
-                repaint();
-            }
-        });
-    }
-
-    @Override
-    protected void paintComponent(Graphics g) {
-        super.paintComponent(g);
-
-        if (handles.size() >= 3) {
-            int[] x = new int[handles.size()];
-            int[] y = new int[handles.size()];
-
-            for (int i = 0; i < handles.size(); i++) {
-                Rectangle rectangle = handles.get(i);
-
-                x[i] = rectangle.x + 6;
-                y[i] = rectangle.y + 6;
-            }
-
-            g.setColor(Color.red);
-            if (!fill)
-                g.drawPolygon(x, y, handles.size());
-            else
-                g.fillPolygon(x, y, handles.size());
-        }
-
-        // We want handles to appear over the polygon
-        g.setColor(Color.cyan);
-        for (Rectangle rectangle : handles) {
-            g.drawRect(rectangle.x, rectangle.y, 12, 12);
-        }
-    }
-}
+import java.util.Timer;
+import java.util.TimerTask;
 
 class Polygon extends JFrame {
+    Timer timer;
+    TimerTask timerTask;
+
     Polygon() {
         super("Polygon");
+
+        timer = new Timer();
 
         setDefaultCloseOperation(EXIT_ON_CLOSE);
 
@@ -108,6 +22,8 @@ class Polygon extends JFrame {
 
         constraints.fill = GridBagConstraints.BOTH;
 
+        constraints.insets.left = 8;
+        constraints.insets.top = 4;
         constraints.ipadx = 64;
         constraints.weighty = 0.0f;
         constraints.weightx = 0.0f;
@@ -120,6 +36,15 @@ class Polygon extends JFrame {
 
         JButton resetButton = new JButton("Reset");
         controls.add(resetButton);
+
+        JLabel animationLabel = new JLabel("Animation");
+        controls.add(animationLabel);
+
+        JButton startButton = new JButton("Start");
+        controls.add(startButton);
+
+        JButton stopButton = new JButton("Stop");
+        controls.add(stopButton);
 
         panel.add(controls, constraints);
 
@@ -143,6 +68,46 @@ class Polygon extends JFrame {
             @Override
             public void actionPerformed(ActionEvent e) {
                 polygonPanel.handles.clear();
+                polygonPanel.repaint();
+            }
+        });
+
+        startButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (timerTask != null)
+                    return;
+
+                polygonPanel.animating = true;
+                polygonPanel.rotation = 0.0;
+                timerTask = new TimerTask() {
+                    @Override
+                    public void run() {
+                        polygonPanel.rotation += 2.0 * Math.PI / 180.0;
+
+                        if (polygonPanel.rotation >= 2.0 * Math.PI) {
+                            polygonPanel.animating = false;
+                            timerTask.cancel();
+                            timerTask = null;
+                        }
+                        polygonPanel.repaint();
+                    }
+                };
+                timer.schedule(timerTask, 0, 1000 / 60);
+            }
+        });
+
+        stopButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (timerTask == null)
+                    return;
+
+                timerTask.cancel();
+                timerTask = null;
+
+                polygonPanel.rotation = 0.0;
+                polygonPanel.animating = false;
                 polygonPanel.repaint();
             }
         });
