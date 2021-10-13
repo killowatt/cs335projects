@@ -31,8 +31,17 @@ class Polygon extends JFrame {
         JPanel controls = new JPanel();
         controls.setLayout(new BoxLayout(controls, BoxLayout.Y_AXIS));
 
-        JCheckBox fillCheckBox = new JCheckBox("Fill");
+        JCheckBox fillCheckBox = new JCheckBox("Fill Polygon");
         controls.add(fillCheckBox);
+
+        JButton colorButton = new JButton("Select color");
+        controls.add(colorButton);
+
+        JCheckBox polygonCheckbox = new JCheckBox("Draw Polygon");
+        controls.add(polygonCheckbox);
+
+        JCheckBox splineCheckbox = new JCheckBox("Draw B-Spline");
+        controls.add(splineCheckbox);
 
         JButton resetButton = new JButton("Reset");
         controls.add(resetButton);
@@ -64,6 +73,32 @@ class Polygon extends JFrame {
             }
         });
 
+        colorButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                Color selectedColor = JColorChooser.showDialog(null, "Polygon Color", Color.red);
+                polygonPanel.setCurrentColor(selectedColor);
+            }
+        });
+
+        polygonCheckbox.setSelected(polygonPanel.showPolygon);
+        polygonCheckbox.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                polygonPanel.showPolygon = polygonCheckbox.isSelected();
+                polygonPanel.repaint();
+            }
+        });
+
+        splineCheckbox.setSelected(polygonPanel.showSpline);
+        splineCheckbox.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                polygonPanel.showSpline = splineCheckbox.isSelected();
+                polygonPanel.repaint();
+            }
+        });
+
         resetButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -83,7 +118,7 @@ class Polygon extends JFrame {
                 timerTask = new TimerTask() {
                     @Override
                     public void run() {
-                        polygonPanel.rotation += 2.0 * Math.PI / 180.0;
+                        polygonPanel.rotation += 2.0 * Math.PI / 360.0;
 
                         if (polygonPanel.rotation >= 2.0 * Math.PI) {
                             polygonPanel.animating = false;
@@ -93,7 +128,8 @@ class Polygon extends JFrame {
                         polygonPanel.repaint();
                     }
                 };
-                timer.schedule(timerTask, 0, 1000 / 60);
+                // Schedule for 120 frames a second
+                timer.schedule(timerTask, 0, 1000 / 120);
             }
         });
 
