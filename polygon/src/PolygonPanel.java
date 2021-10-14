@@ -309,7 +309,7 @@ public class PolygonPanel extends JPanel {
                 }
             }
 
-            // If show centroid is set and we have at least one handle, draw the centroid
+            // If show centroid is set, and we have at least one handle, draw the centroid
             if (showCentroid && handles.size() > 0) {
                 // We offset the location so that the centroid square is properly centered
                 g.drawRect(centroidX - 2, centroidY - 2, 4, 4);
