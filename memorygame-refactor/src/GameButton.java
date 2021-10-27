@@ -10,14 +10,27 @@ public class GameButton extends JButton {
     MemoryGame game;
     public int cardIndex = 0;
 
+    static ImageIcon defaultIcon = new ImageIcon("images/default.png");
+
+    static ImageIcon[] icons = new ImageIcon[] {
+            new ImageIcon("images/0.png"),
+            new ImageIcon("images/1.png"),
+            new ImageIcon("images/2.png"),
+            new ImageIcon("images/3.png"),
+            new ImageIcon("images/4.png"),
+            new ImageIcon("images/5.png"),
+            new ImageIcon("images/6.png"),
+            new ImageIcon("images/7.png")
+    };
+
     public void hideCard() {
-        setIcon(game.getDefaultIcon());
+        setIcon(defaultIcon);
     }
 
     // Called when the card is correctly matched, disables the button
     public void revealCorrect() {
         // Redundantly set the card's icon and disable the button
-        setIcon(game.getIcons()[cardIndex]);
+        setIcon(icons[cardIndex]);
         setEnabled(false);
     }
 
@@ -25,7 +38,7 @@ public class GameButton extends JButton {
     public void reset() {
         // Re-enable the button and set the hidden icon
         setEnabled(true);
-        setIcon(game.getDefaultIcon());
+        setIcon(defaultIcon);
     }
 
     GameButton(MemoryGame memoryGame, int card) {
@@ -37,7 +50,7 @@ public class GameButton extends JButton {
         cardIndex = card;
 
         // Set the button's icon to the unrevealed default one
-        setIcon(game.getDefaultIcon());
+        setIcon(defaultIcon);
 
         // Set our preferred size to be a little bigger than our icons
         setPreferredSize(new Dimension(96, 96));
@@ -49,7 +62,7 @@ public class GameButton extends JButton {
             @Override
             public void actionPerformed(ActionEvent e) {
                 // Reveal the card and then notify our game
-                setIcon(game.getIcons()[cardIndex]);
+                setIcon(icons[cardIndex]);
                 game.onCardSelected(thisButton);
             }
         });

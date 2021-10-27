@@ -22,10 +22,6 @@ class MemoryGame extends JFrame {
     JLabel scoreLabel;
     JLabel guessesLabel;
 
-    // The icons for our buttons, stored here to stop unnecessary file reload during reset
-    ImageIcon[] icons;
-    ImageIcon defaultIcon;
-
     Timer timer;
     TimerTask timerTask;
 
@@ -38,15 +34,6 @@ class MemoryGame extends JFrame {
         setDefaultCloseOperation(EXIT_ON_CLOSE);
 
         timer = new Timer();
-
-        // Load our default icon
-        defaultIcon = new ImageIcon("images/default.png");
-
-        // Load all of our card icons zero through seven
-        icons = new ImageIcon[8];
-        for (int i = 0; i < 8; i++) {
-            icons[i] = new ImageIcon("images/" + i + ".png");
-        }
 
         // Get our JFrame content pane and set it to use a grid bag layout
         Container contentPane = getContentPane();
@@ -124,16 +111,6 @@ class MemoryGame extends JFrame {
         setVisible(true);
     }
 
-    // Returns a reference to all of our icons
-    public ImageIcon[] getIcons() {
-        return icons;
-    }
-
-    // Returns a reference to our default unrevealed icon
-    public ImageIcon getDefaultIcon() {
-        return defaultIcon;
-    }
-
     // Set the current game score, updating our score label
     void setScore(int value) {
         score = value;
@@ -191,8 +168,6 @@ class MemoryGame extends JFrame {
                     public void run() {
                         button.hideCard();
                         fb.hideCard();
-
-                        timerTask = null;
                     }
                 };
                 // Schedule the task for 3000ms (3 seconds) from now
@@ -211,6 +186,11 @@ class MemoryGame extends JFrame {
 
     // Called when our reset button is pressed, resets our game state and shuffles the grid
     void reset() {
+        if (timerTask != null) {
+            timerTask.cancel();
+            timerTask = null;
+        }
+
         // Shuffle our grid, this does not update our layout however
         Collections.shuffle(gameButtons);
         for (GameButton button : gameButtons) {
