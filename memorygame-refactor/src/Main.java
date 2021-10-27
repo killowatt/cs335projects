@@ -82,15 +82,29 @@ class MemoryGame extends JFrame {
         // Create our game button array and create two buttons for each card type
         gameButtons = new ArrayList<>();
         for (int i = 0; i < 8; i++) {
-            gameButtons.add(new GameButton(this, i));
-            gameButtons.add(new GameButton(this, i));
+            for (int j = 0; j < 2; j++) {
+                GameButton button = new GameButton();
+                button.cardIndex = i;
+
+                button.addActionListener(new ActionListener() {
+                    @Override
+                        public void actionPerformed(ActionEvent e) {
+                            // Reveal the card and then notify our game
+                            button.showCard();
+                            onCardSelected(button);
+                        }
+                    });
+
+                gameButtons.add(button);
+            }
         }
+
         // Shuffle the grid before we add it to the panel
         Collections.shuffle(gameButtons);
 
         // Add all of our game buttons to the game panel
-        for (int i = 0; i < (4 * 4); i++) {
-            gamePanel.add(gameButtons.get(i));
+        for (GameButton button : gameButtons) {
+            gamePanel.add(button);
         }
 
         // Set up our constraints further for the game grid, fill the space

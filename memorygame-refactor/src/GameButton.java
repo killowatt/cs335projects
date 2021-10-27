@@ -6,8 +6,6 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 public class GameButton extends JButton {
-    // A reference to our game JFrame and this button's card id
-    MemoryGame game;
     public int cardIndex = 0;
 
     static ImageIcon defaultIcon = new ImageIcon("images/default.png");
@@ -27,6 +25,10 @@ public class GameButton extends JButton {
         setIcon(defaultIcon);
     }
 
+    public void showCard() {
+        setIcon(icons[cardIndex]);
+    }
+
     // Called when the card is correctly matched, disables the button
     public void revealCorrect() {
         // Redundantly set the card's icon and disable the button
@@ -41,30 +43,14 @@ public class GameButton extends JButton {
         setIcon(defaultIcon);
     }
 
-    GameButton(MemoryGame memoryGame, int card) {
+    GameButton() {
         // Call parent constructor, no overlaid text
         super("");
-
-        // Set up our card's id and a reference to our game JFrame
-        game = memoryGame;
-        cardIndex = card;
 
         // Set the button's icon to the unrevealed default one
         setIcon(defaultIcon);
 
         // Set our preferred size to be a little bigger than our icons
         setPreferredSize(new Dimension(96, 96));
-
-        // Set up our button so that when pressed it notifies the game it has been selected
-        // We use thisButton since the "this" statement to provide this button instance to the anonymous class
-        GameButton thisButton = this;
-        addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                // Reveal the card and then notify our game
-                setIcon(icons[cardIndex]);
-                game.onCardSelected(thisButton);
-            }
-        });
     }
 }
