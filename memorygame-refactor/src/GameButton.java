@@ -10,34 +10,12 @@ public class GameButton extends JButton {
     MemoryGame game;
     public int cardIndex = 0;
 
-    // Our timer and its current task if any
-    Timer timer;
-    TimerTask task;
-
-    // Starts a timer to hide the card after three seconds
-    public void startHide() {
-        // Cancel previous undesired timer task
-        if (task != null)
-            task.cancel();
-
-        // Start a new timer task that when executed will reset the button's icon
-        task = new TimerTask() {
-            @Override
-            public void run() {
-                setIcon(game.getDefaultIcon());
-                task = null;
-            }
-        };
-        // Schedule the task for 3000ms (3 seconds) from now
-        timer.schedule(task, 3000);
+    public void hideCard() {
+        setIcon(game.getDefaultIcon());
     }
 
     // Called when the card is correctly matched, disables the button
     public void revealCorrect() {
-        // Cancel any existing undesired timer task
-        if (task != null)
-            task.cancel();
-
         // Redundantly set the card's icon and disable the button
         setIcon(game.getIcons()[cardIndex]);
         setEnabled(false);
@@ -57,9 +35,6 @@ public class GameButton extends JButton {
         // Set up our card's id and a reference to our game JFrame
         game = memoryGame;
         cardIndex = card;
-
-        // Create our button's timer
-        timer = new Timer();
 
         // Set the button's icon to the unrevealed default one
         setIcon(game.getDefaultIcon());
