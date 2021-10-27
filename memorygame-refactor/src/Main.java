@@ -7,8 +7,9 @@ import java.util.Collections;
 import java.util.Timer;
 import java.util.TimerTask;
 
+// Main memory game class, handles all game logic
 class MemoryGame extends JFrame {
-    //
+    // Constants for our game
     static final int NUM_CARDS = 8;
     static final int GRID_SIZE = 4;
 
@@ -26,6 +27,7 @@ class MemoryGame extends JFrame {
     JLabel scoreLabel;
     JLabel guessesLabel;
 
+    // Timer and task for our card reveal countdown
     Timer timer;
     TimerTask timerTask;
 
@@ -37,6 +39,7 @@ class MemoryGame extends JFrame {
         // Close the application when the exit button is pressed
         setDefaultCloseOperation(EXIT_ON_CLOSE);
 
+        // Create our game timer
         timer = new Timer();
 
         // Get our JFrame content pane and set it to use a grid bag layout
@@ -46,10 +49,12 @@ class MemoryGame extends JFrame {
         // Now create our JPanel for our score, guesses & reset button
         JPanel scorePanel = new JPanel();
 
+        // Create our game score and guesses labels
         scoreLabel = new JLabel();
-        scorePanel.add(scoreLabel);
-
         guessesLabel = new JLabel();
+
+        // Now add our labels to the panel
+        scorePanel.add(scoreLabel);
         scorePanel.add(guessesLabel);
 
         // Set up our reset button, all it does is call our reset method
@@ -87,9 +92,11 @@ class MemoryGame extends JFrame {
         gameButtons = new ArrayList<>();
         for (int i = 0; i < NUM_CARDS; i++) {
             for (int j = 0; j < 2; j++) {
+                // Create our game button and assign the card ID
                 GameButton button = new GameButton();
                 button.cardIndex = i;
 
+                // Set up our button to call our card selected method when clicked
                 button.addActionListener(new ActionListener() {
                     @Override
                         public void actionPerformed(ActionEvent e) {
@@ -97,6 +104,7 @@ class MemoryGame extends JFrame {
                         }
                     });
 
+                // Add our button to the array of game buttons
                 gameButtons.add(button);
             }
         }
@@ -141,10 +149,12 @@ class MemoryGame extends JFrame {
 
     // Called when a card is selected, the core of our game logic is performed here
     void onCardSelected(GameButton button) {
+        // If we have a timer task, that means we selected two cards before
+        // If we've clicked again, we need to hide both cards immediately by running that task
         if (timerTask != null) {
+            // We cancel the task first, so it isn't re-run later by the timer
             timerTask.cancel();
             timerTask.run();
-            timerTask = null;
         }
 
         // If this button is the same as our first button, ignore this click
@@ -155,6 +165,7 @@ class MemoryGame extends JFrame {
         if (firstButton == null) {
             firstButton = button;
 
+            // Show the card, and set its background to green so we know its our first click
             button.showCard();
             firstButton.setBackground(Color.green);
         }
@@ -177,16 +188,20 @@ class MemoryGame extends JFrame {
             }
             // Otherwise, start the hide timers for both buttons
             else {
+                // Make sure we reveal the second card
                 button.showCard();
-                timerTask = new TimerTask() {
 
-                    //
+                timerTask = new TimerTask() {
+                    // Set up a separate reference to the first button, since firstButton may get overwritten
                     final GameButton first = firstButton;
 
                     @Override
                     public void run() {
+                        // When this timer task runs, hide both cards
                         button.hideCard();
                         first.hideCard();
+
+                        timerTask = null;
                     }
                 };
                 // Schedule the task for 3000ms (3 seconds) from now
@@ -194,7 +209,6 @@ class MemoryGame extends JFrame {
 
                 // Increment our number of guesses
                 setGuesses(guesses + 1);
-
             }
 
             // Reset our first button's background and set our first button to null for our next guess
