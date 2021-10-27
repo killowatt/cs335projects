@@ -1,16 +1,15 @@
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.util.Timer;
-import java.util.TimerTask;
 
 public class GameButton extends JButton {
+    // The card "index" value that maps to the icon this button is using
     public int cardIndex = 0;
 
-    static ImageIcon defaultIcon = new ImageIcon("images/default.png");
+    // Our default icon that unrevealed cards share
+    static private ImageIcon defaultIcon = new ImageIcon("images/default.png");
 
-    static ImageIcon[] icons = new ImageIcon[] {
+    // Our game icons that our player is attempting to match
+    static private ImageIcon[] icons = new ImageIcon[] {
             new ImageIcon("images/0.png"),
             new ImageIcon("images/1.png"),
             new ImageIcon("images/2.png"),
@@ -21,10 +20,12 @@ public class GameButton extends JButton {
             new ImageIcon("images/7.png")
     };
 
+    // Returns the card to the default hidden state
     public void hideCard() {
         setIcon(defaultIcon);
     }
 
+    // Shows the card's face
     public void showCard() {
         setIcon(icons[cardIndex]);
     }

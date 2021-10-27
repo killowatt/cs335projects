@@ -8,6 +8,10 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 class MemoryGame extends JFrame {
+    //
+    static final int NUM_CARDS = 8;
+    static final int GRID_SIZE = 4;
+
     // Current score & guesses made
     int score = 0;
     int guesses = 0;
@@ -77,11 +81,11 @@ class MemoryGame extends JFrame {
 
         // Set up our game panel and set a grid layout, 4 rows and 4 columns
         JPanel gamePanel = new JPanel();
-        gamePanel.setLayout(new GridLayout(4, 4));
+        gamePanel.setLayout(new GridLayout(GRID_SIZE, GRID_SIZE));
 
         // Create our game button array and create two buttons for each card type
         gameButtons = new ArrayList<>();
-        for (int i = 0; i < 8; i++) {
+        for (int i = 0; i < NUM_CARDS; i++) {
             for (int j = 0; j < 2; j++) {
                 GameButton button = new GameButton();
                 button.cardIndex = i;
@@ -89,8 +93,6 @@ class MemoryGame extends JFrame {
                 button.addActionListener(new ActionListener() {
                     @Override
                         public void actionPerformed(ActionEvent e) {
-                            // Reveal the card and then notify our game
-                            button.showCard();
                             onCardSelected(button);
                         }
                     });
@@ -152,8 +154,8 @@ class MemoryGame extends JFrame {
         // If this is our first button click, set it as our current first half of our guess
         if (firstButton == null) {
             firstButton = button;
-            // We set the background to green so it's easier to see which card you are currently
-            // guessing with
+
+            button.showCard();
             firstButton.setBackground(Color.green);
         }
         // Otherwise, this must be our second button press. Check if the cards match
@@ -168,20 +170,23 @@ class MemoryGame extends JFrame {
                 setScore(score + 1);
                 setGuesses(guesses + 1);
 
-                if (score >= 8) {
+                // If our score reaches the max
+                if (score >= NUM_CARDS) {
                     JOptionPane.showMessageDialog(this, "You win!");
                 }
             }
             // Otherwise, start the hide timers for both buttons
             else {
+                button.showCard();
                 timerTask = new TimerTask() {
 
-                    final GameButton fb = firstButton;
+                    //
+                    final GameButton first = firstButton;
 
                     @Override
                     public void run() {
                         button.hideCard();
-                        fb.hideCard();
+                        first.hideCard();
                     }
                 };
                 // Schedule the task for 3000ms (3 seconds) from now
@@ -213,7 +218,7 @@ class MemoryGame extends JFrame {
 
         // Now iterate and replace each cards index at the front and back of our button array
         // This achieves a random shuffle though this solution is less clear
-        for (int i = 0; i < 8; i++) {
+        for (int i = 0; i < NUM_CARDS; i++) {
             gameButtons.get(i).cardIndex = i;
             gameButtons.get(gameButtons.size() - i - 1).cardIndex = i;
         }
