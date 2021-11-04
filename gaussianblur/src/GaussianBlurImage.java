@@ -5,10 +5,9 @@ import java.awt.image.ConvolveOp;
 import java.awt.image.Kernel;
 
 class GaussianBlurImage extends JComponent {
+    boolean filter = false;
     private BufferedImage image;
     private BufferedImage blurredImage;
-
-    boolean filter = false;
 
     GaussianBlurImage() {
         super();
@@ -26,10 +25,13 @@ class GaussianBlurImage extends JComponent {
         revalidate();
     }
 
-    public void setBlur(int radius) {
+    public void setBlur(int radius, int deviation) {
+        if (image == null || radius <= 0)
+            return;
+
         int kernelSize = (2 * radius) + 1;
 
-        float[] kernelData = generateKernel(radius, kernelSize);
+        float[] kernelData = generateKernel(radius, kernelSize, deviation);
         Kernel kernel = new Kernel(kernelSize, kernelSize, kernelData);
 
         ConvolveOp op = new ConvolveOp(kernel, ConvolveOp.EDGE_NO_OP, null);
@@ -41,15 +43,10 @@ class GaussianBlurImage extends JComponent {
         repaint();
     }
 
-    public void reset() {
-        filter = false;
-        repaint();
-    }
-
-    private float[] generateKernel(int radius, int kernelSize) {
+    private float[] generateKernel(int radius, int kernelSize, int deviation) {
         // https://aryamansharda.medium.com/image-filters-gaussian-blur-eb36db6781b1
 
-        double sigma = Math.max(radius / 2.0, 1.0);
+        double sigma = Math.max(radius / 2.0, deviation);
 
         float[] kernel = new float[kernelSize * kernelSize];
 
@@ -66,8 +63,8 @@ class GaussianBlurImage extends JComponent {
                 double kernelValue = eExpression / (2.0 * Math.PI * sigma * sigma);
 
                 int index = kernelSize * (y + radius) + (x + radius);
-                kernel[index] = (float)kernelValue;
-                sum += (float)kernelValue;
+                kernel[index] = (float) kernelValue;
+                sum += (float) kernelValue;
             }
         }
 
@@ -80,17 +77,11 @@ class GaussianBlurImage extends JComponent {
 
     @Override
     protected void paintComponent(Graphics g) {
-        Graphics2D g2D = (Graphics2D)g;
+        Graphics2D g2D = (Graphics2D) g;
 
-        if (!filter) {
+        if (!filter)
             g2D.drawImage(image, 0, 0, this);
-            System.out.println("repaint");
-
-        }
-        else {
+        else
             g2D.drawImage(blurredImage, 0, 0, this);
-            System.out.println("repaint blurred");
-
-        }
     }
 }

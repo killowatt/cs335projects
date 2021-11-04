@@ -32,31 +32,71 @@ class GaussianBlur extends JFrame {
         setJMenuBar(menuBar);
 
 
-
-
         JPanel controlPanel = new JPanel();
 
+        JLabel radiusLabel = new JLabel("Radius");
         JSlider blurSlider = new JSlider();
+
+        JLabel deviationLabel = new JLabel("Std Dev");
+        JSlider deviationSlider = new JSlider();
 
         JButton resetButton = new JButton("Reset");
 
-        GaussianBlurImage ererfg = new GaussianBlurImage();
+        radiusLabel.setAlignmentX(JLabel.CENTER_ALIGNMENT);
+        radiusLabel.setAlignmentX(JLabel.CENTER_ALIGNMENT);
 
-        controlPanel.add(blurSlider);
+        JPanel radiusPanel = new JPanel();
+        radiusPanel.setLayout(new BoxLayout(radiusPanel, BoxLayout.Y_AXIS));
+        radiusPanel.add(radiusLabel);
+        radiusPanel.add(blurSlider);
+
+        JPanel deviationPanel = new JPanel();
+        deviationPanel.setLayout(new BoxLayout(deviationPanel, BoxLayout.Y_AXIS));
+        deviationPanel.add(deviationLabel);
+        deviationPanel.add(deviationSlider);
+
+        controlPanel.add(radiusPanel);
+        controlPanel.add(deviationPanel);
         controlPanel.add(resetButton);
 
-
-
+        GaussianBlurImage blurImage = new GaussianBlurImage();
 
         Container contentPane = getContentPane();
         contentPane.setLayout(new BoxLayout(contentPane, BoxLayout.Y_AXIS));
         contentPane.add(controlPanel);
-        contentPane.add(ererfg);
+        contentPane.add(blurImage);
 
-        quitButton.addActionListener(new ActionListener() {
+        //
+        blurSlider.setMinimum(0);
+        blurSlider.setMaximum(10);
+        blurSlider.setMinorTickSpacing(1);
+        blurSlider.setMajorTickSpacing(5);
+        blurSlider.setSnapToTicks(true);
+        blurSlider.setPaintTicks(true);
+        blurSlider.setPaintLabels(true);
+        blurSlider.setValue(0);
+
+        blurSlider.addChangeListener(new ChangeListener() {
             @Override
-            public void actionPerformed(ActionEvent e) {
-                System.exit(0);
+            public void stateChanged(ChangeEvent e) {
+                blurImage.setBlur(blurSlider.getValue(), deviationSlider.getValue());
+            }
+        });
+
+        //
+        deviationSlider.setMinimum(1);
+        deviationSlider.setMaximum(3);
+        deviationSlider.setMajorTickSpacing(1);
+        deviationSlider.setSnapToTicks(true);
+        deviationSlider.setPaintTicks(true);
+        deviationSlider.setPaintLabels(true);
+        deviationSlider.setPreferredSize(new Dimension(75, 50));
+        deviationSlider.setValue(1);
+
+        deviationSlider.addChangeListener(new ChangeListener() {
+            @Override
+            public void stateChanged(ChangeEvent e) {
+                blurImage.setBlur(blurSlider.getValue(), deviationSlider.getValue());
             }
         });
 
@@ -64,25 +104,10 @@ class GaussianBlur extends JFrame {
         resetButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                ererfg.reset();
+                blurSlider.setValue(0);
+                deviationSlider.setValue(1);
             }
         });
-
-        blurSlider.setPaintLabels(true);
-        blurSlider.setPaintTicks(true);
-        blurSlider.setSnapToTicks(true);
-        blurSlider.setMinimum(0);
-        blurSlider.setMaximum(10);
-        blurSlider.setMinorTickSpacing(1);
-        blurSlider.setMajorTickSpacing(5);
-
-        blurSlider.addChangeListener(new ChangeListener() {
-            @Override
-            public void stateChanged(ChangeEvent e) {
-                ererfg.setBlur(blurSlider.getValue());
-            }
-        });
-
 
         final JFrame thisFrame = this;
         openFileButton.addActionListener(new ActionListener() {
@@ -94,12 +119,22 @@ class GaussianBlur extends JFrame {
                 String fileName = dialog.getDirectory() + dialog.getFile();
 
                 try {
-                    ererfg.setImage(ImageIO.read(new File(fileName)));
+                    blurImage.setImage(ImageIO.read(new File(fileName)));
                 } catch (IOException ex) {
                     ex.printStackTrace();
                 }
 
                 pack();
+
+                blurSlider.setValue(0);
+                deviationSlider.setValue(1);
+            }
+        });
+
+        quitButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                System.exit(0);
             }
         });
 
