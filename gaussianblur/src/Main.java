@@ -12,8 +12,8 @@ import java.io.File;
 import java.io.IOException;
 
 class GaussianBlurImage extends JComponent {
-    private BufferedImage bufferedImage;
-    private BufferedImage blurred;
+    private BufferedImage image;
+    private BufferedImage blurredImage;
 
     boolean filter = false;
 
@@ -21,10 +21,12 @@ class GaussianBlurImage extends JComponent {
         super();
     }
 
-    public void setImage(BufferedImage image) {
-        bufferedImage = image;
+    public void setImage(BufferedImage bufferedImage) {
+        filter = false;
 
-        blurred = new BufferedImage(bufferedImage.getWidth(), bufferedImage.getHeight(), BufferedImage.TYPE_INT_ARGB);
+        image = bufferedImage;
+
+        //blurredImage = new BufferedImage(image.getWidth(), image.getHeight(), BufferedImage.TYPE_INT_ARGB);
 
 
         setPreferredSize(new Dimension(image.getWidth(), image.getHeight()));
@@ -34,26 +36,19 @@ class GaussianBlurImage extends JComponent {
         revalidate();
     }
 
-    private final float[] LOWPASS3x3 =
-            {0.1f, 0.1f, 0.1f, 0.1f, 0.2f, 0.1f, 0.1f, 0.1f, 0.1f};
+    private int getKernelSize(int radius) {
+        return (2 * radius) + 1;
+    }
 
     public void setBlur(int radius) {
-       // Kernel kernel = new Kernel(3, 3, LOWPASS3x3);
+        int kernelSize = (2 * radius) + 1;
 
-        int kernelWidth = (2 * radius) + 1;
-
-        float[] kernelz = generateKernel(radius);
-        Kernel kernel = new Kernel(kernelWidth, kernelWidth, kernelz);
+        float[] kernelData = generateKernel(radius, kernelSize);
+        Kernel kernel = new Kernel(kernelSize, kernelSize, kernelData);
 
         ConvolveOp op = new ConvolveOp(kernel, ConvolveOp.EDGE_NO_OP, null);
 
-
-
-        BufferedImage bi = new BufferedImage(bufferedImage.getWidth(), bufferedImage.getHeight(), BufferedImage.TYPE_INT_ARGB);
-        Graphics2D g2D = bi.createGraphics();
-        g2D.drawImage(bufferedImage, 0, 0, null);
-
-        op.filter(bi, blurred);
+        blurredImage = op.filter(image, null);
 
         filter = true;
 
@@ -65,13 +60,12 @@ class GaussianBlurImage extends JComponent {
         repaint();
     }
 
-    private float[] generateKernel(int radius) {
+    private float[] generateKernel(int radius, int kernelSize) {
+        // https://aryamansharda.medium.com/image-filters-gaussian-blur-eb36db6781b1
 
         double sigma = Math.max(radius / 2.0, 1.0);
 
-        int kernelWidth = (2 * radius) + 1;
-
-        float[] kernel = new float[kernelWidth * kernelWidth];
+        float[] kernel = new float[kernelSize * kernelSize];
 
         float sum = 0.0f;
 
@@ -85,7 +79,7 @@ class GaussianBlurImage extends JComponent {
                 double eExpression = Math.pow(Math.E, exponentNumerator / exponentDenominator);
                 double kernelValue = eExpression / (2.0 * Math.PI * sigma * sigma);
 
-                int index = kernelWidth * (y + radius) + (x + radius);
+                int index = kernelSize * (y + radius) + (x + radius);
                 kernel[index] = (float)kernelValue;
                 sum += (float)kernelValue;
             }
@@ -103,12 +97,12 @@ class GaussianBlurImage extends JComponent {
         Graphics2D g2D = (Graphics2D)g;
 
         if (!filter) {
-            g2D.drawImage(bufferedImage, 0, 0, this);
+            g2D.drawImage(image, 0, 0, this);
             System.out.println("repaint");
 
         }
         else {
-            g2D.drawImage(blurred, 0, 0, this);
+            g2D.drawImage(blurredImage, 0, 0, this);
             System.out.println("repaint blurred");
 
         }
@@ -175,16 +169,17 @@ class GaussianBlur extends JFrame {
             }
         });
 
+        blurSlider.setPaintLabels(true);
         blurSlider.setPaintTicks(true);
         blurSlider.setSnapToTicks(true);
         blurSlider.setMinimum(0);
-        blurSlider.setMaximum(8);
-        blurSlider.setMajorTickSpacing(1);
+        blurSlider.setMaximum(10);
+        blurSlider.setMinorTickSpacing(1);
+        blurSlider.setMajorTickSpacing(5);
 
         blurSlider.addChangeListener(new ChangeListener() {
             @Override
             public void stateChanged(ChangeEvent e) {
-                System.out.println(blurSlider.getValue());
                 ererfg.setBlur(blurSlider.getValue());
             }
         });
