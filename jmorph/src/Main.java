@@ -20,8 +20,16 @@ class JMorph extends JFrame {
         ImageMesh a = new ImageMesh();
         ImageMesh b = new ImageMesh();
 
-        imagesPanel.add(a);
-        imagesPanel.add(b);
+        imagesPanel.setLayout(new GridBagLayout());
+
+        GridBagConstraints cz = new GridBagConstraints();
+        cz.fill = GridBagConstraints.BOTH;
+        cz.weightx = 1.0f;
+        cz.weighty = 1.0f;
+        cz.insets = new Insets(4, 4, 4, 4);
+
+        imagesPanel.add(a, cz);
+        imagesPanel.add(b, cz);
 
         GridBagConstraints constraints = new GridBagConstraints();
         constraints.fill = GridBagConstraints.BOTH;
@@ -31,7 +39,12 @@ class JMorph extends JFrame {
         controls.add(new JButton("Render"));
         controls.add(new JSlider());
 
+        constraints.weighty = 1.0f;
+        constraints.weightx = 1.0f;
         panel.add(imagesPanel, constraints);
+
+        constraints.weighty = 0.0f;
+        constraints.weightx = 0.0f;
 
         constraints.gridy = 1;
         panel.add(controls, constraints);
