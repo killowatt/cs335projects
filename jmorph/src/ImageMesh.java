@@ -42,7 +42,6 @@ public class ImageMesh extends JPanel {
                     Point2D scaled = new Point2D.Double(point.getX() * scaleX, point.getY() * scaleY);
 
                     if (e.getPoint().distance(scaled) <= 3.0) {
-                        System.out.println("Selected!!");
                         selected = point;
                         return;
                     }
@@ -52,7 +51,6 @@ public class ImageMesh extends JPanel {
             @Override
             public void mouseReleased(MouseEvent e) {
                 //super.mouseReleased(e);
-                System.out.println("Release");
                 selected = null;
             }
         });
@@ -67,8 +65,6 @@ public class ImageMesh extends JPanel {
                 double newX = e.getX() / getSize().getWidth();
                 double newY = e.getY() / getSize().getHeight();
                 selected.setLocation(newX, newY);
-
-                System.out.println(newX + " " + newY);
 
                 repaint();
             }

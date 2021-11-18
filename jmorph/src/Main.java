@@ -20,24 +20,54 @@ class JMorph extends JFrame {
         ImageMesh a = new ImageMesh();
         ImageMesh b = new ImageMesh();
 
-        imagesPanel.setLayout(new GridBagLayout());
+        //imagesPanel.setLayout(new GridBagLayout());
 
-        GridBagConstraints cz = new GridBagConstraints();
-        cz.fill = GridBagConstraints.BOTH;
-        cz.weightx = 1.0f;
-        cz.weighty = 1.0f;
-        cz.insets = new Insets(4, 4, 4, 4);
+//        GridBagConstraints cz = new GridBagConstraints();
+//        cz.fill = GridBagConstraints.BOTH;
+//        cz.weightx = 1.0f;
+//        cz.weighty = 1.0f;
+//        cz.insets = new Insets(4, 4, 4, 4);
 
-        imagesPanel.add(a, cz);
-        imagesPanel.add(b, cz);
+        imagesPanel.add(a);//, cz);
+        imagesPanel.add(b);//, cz);
 
         GridBagConstraints constraints = new GridBagConstraints();
         constraints.fill = GridBagConstraints.BOTH;
         constraints.gridy = 0;
 
         JPanel controls = new JPanel();
-        controls.add(new JButton("Render"));
-        controls.add(new JSlider());
+
+        JButton previewButton = new JButton("Preview");
+        previewButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                JOptionPane.showConfirmDialog(null, new MorphPreview(a, b), "Preview", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
+            }
+        });
+
+
+//        JSlider fpsSlider = new JSlider();
+//        fpsSlider.setMinimum(1);
+//        fpsSlider.setMaximum(60);
+//        fpsSlider.setMinorTickSpacing(1);
+//        fpsSlider.setMajorTickSpacing(10);
+//        fpsSlider.setSnapToTicks(true);
+//        fpsSlider.setPaintTicks(true);
+//        fpsSlider.setPaintLabels(true);
+//        fpsSlider.setValue(30);
+
+        SpinnerNumberModel model = new SpinnerNumberModel(30, 1, 120, 1);
+        JSpinner fpsSpinner = new JSpinner(model);
+
+        SpinnerNumberModel lenm = new SpinnerNumberModel(180, 30, 900, 50);
+        JSpinner lenSpin = new JSpinner(lenm);
+
+        controls.add(new JLabel("Framerate"));
+        controls.add(fpsSpinner);
+        controls.add(new JLabel("# Frames"));
+        controls.add(lenSpin);
+
+        controls.add(previewButton);
 
         constraints.weighty = 1.0f;
         constraints.weightx = 1.0f;
