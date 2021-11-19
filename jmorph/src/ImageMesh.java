@@ -10,12 +10,15 @@ import java.util.ArrayList;
 public class ImageMesh extends JPanel {
     BufferedImage ourimg;
 
+    public ImageMesh other;
+
     ArrayList<Point2D> vertices;
     ArrayList<Integer> triangles;
 
     public int subs = 5;
 
     Point2D selected = null;
+    int sidx = -1;
 
     ImageMesh() {
         super();
@@ -35,7 +38,9 @@ public class ImageMesh extends JPanel {
                 final int x = e.getX();
                 final int y = e.getY();
 
-                for (Point2D point : vertices) {
+                for (int i = 0; i < vertices.size(); i++) {
+                    Point2D point = vertices.get(i);
+
                     double scaleX = getSize().width;
                     double scaleY = getSize().height;
 
@@ -43,6 +48,10 @@ public class ImageMesh extends JPanel {
 
                     if (e.getPoint().distance(scaled) <= 3.0) {
                         selected = point;
+
+                        other.sidx = i;
+                        other.repaint();
+
                         return;
                     }
                 }
@@ -52,6 +61,10 @@ public class ImageMesh extends JPanel {
             public void mouseReleased(MouseEvent e) {
                 //super.mouseReleased(e);
                 selected = null;
+                repaint();
+
+                other.sidx = -1;
+                other.repaint();
             }
         });
 
@@ -128,16 +141,6 @@ public class ImageMesh extends JPanel {
         repaint();
     }
 
-    static void bro(Graphics g, Dimension d, Point2D first, Point2D second) {
-        int x0 = (int)(first.getX() * d.getWidth());
-        int y0 = (int)(first.getY() * d.getHeight());
-
-        int x1 = (int)(second.getX() * d.getWidth());
-        int y1 = (int)(second.getY() * d.getHeight());
-
-        g.drawLine(x0, y0, x1, y1);
-    }
-
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
@@ -148,20 +151,15 @@ public class ImageMesh extends JPanel {
             g.drawImage(ourimg, 0, 0, d.width, d.height, null);
         }
 
-        for (int t = 0; t < triangles.size(); t += 3) {
-            g.setColor(Color.gray);
+        GridUtilities.DrawGrid(g, d, vertices, triangles);
 
-            Point2D firstVertex = vertices.get(triangles.get(t));
-            Point2D secondVertex = vertices.get(triangles.get(t + 1));
-            Point2D thirdVertex = vertices.get(triangles.get(t + 2));
+        for (int i = 0; i < vertices.size(); i++) {
+            Point2D p = vertices.get(i);
 
-            bro(g, d, firstVertex, secondVertex);
-            bro(g, d, secondVertex, thirdVertex);
-            bro(g, d, thirdVertex, firstVertex);
-        }
-
-        for (Point2D p : vertices) {
-            g.setColor(Color.cyan);
+            if (p == selected || i == sidx)
+                g.setColor(Color.orange);
+            else
+                g.setColor(Color.cyan);
 
             double x = p.getX();
             double y = p.getY();

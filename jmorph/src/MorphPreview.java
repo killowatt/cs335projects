@@ -43,8 +43,7 @@ public class MorphPreview extends JPanel {
                     double xi = v0.getX() + (v1.getX() - v0.getX()) * t;
                     double yi = v0.getY() + (v1.getY() - v0.getY()) * t;
 
-                    Point2D p = vertices.get(i);
-                    p.setLocation(xi, yi);
+                    vertices.get(i).setLocation(xi, yi);
                 }
 
                 repaint();
@@ -52,20 +51,19 @@ public class MorphPreview extends JPanel {
 
                 if (t >= 1.0f) {
                     timer.stop();
+
+                    for (int i = 0; i < vertices.size(); i++) {
+                        Point2D finalPoint = second.vertices.get(i);
+
+                        double finalX = finalPoint.getX();
+                        double finalY = finalPoint.getY();
+
+                        vertices.get(i).setLocation(finalX, finalY);
+                    }
                 }
             }
         });
         timer.start();
-    }
-
-    static void bro(Graphics g, Dimension d, Point2D first, Point2D second) {
-        int x0 = (int)(first.getX() * d.getWidth());
-        int y0 = (int)(first.getY() * d.getHeight());
-
-        int x1 = (int)(second.getX() * d.getWidth());
-        int y1 = (int)(second.getY() * d.getHeight());
-
-        g.drawLine(x0, y0, x1, y1);
     }
 
     @Override
@@ -74,17 +72,7 @@ public class MorphPreview extends JPanel {
 
         Dimension d = getSize();
 
-        for (int t = 0; t < triangles.size(); t += 3) {
-            g.setColor(Color.gray);
-
-            Point2D firstVertex = vertices.get(triangles.get(t));
-            Point2D secondVertex = vertices.get(triangles.get(t + 1));
-            Point2D thirdVertex = vertices.get(triangles.get(t + 2));
-
-            bro(g, d, firstVertex, secondVertex);
-            bro(g, d, secondVertex, thirdVertex);
-            bro(g, d, thirdVertex, firstVertex);
-        }
+        GridUtilities.DrawGrid(g, d, vertices, triangles);
 
         for (Point2D p : vertices) {
             g.setColor(Color.cyan);

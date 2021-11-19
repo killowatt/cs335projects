@@ -22,6 +22,9 @@ class JMorph extends JFrame {
         ImageMesh a = new ImageMesh();
         ImageMesh b = new ImageMesh();
 
+        a.other = b;
+        b.other = a;
+
         //imagesPanel.setLayout(new GridBagLayout());
 
 //        GridBagConstraints cz = new GridBagConstraints();
@@ -53,10 +56,10 @@ class JMorph extends JFrame {
 //        fpsSlider.setPaintLabels(true);
 //        fpsSlider.setValue(30);
 
-        SpinnerNumberModel model = new SpinnerNumberModel(30, 1, 120, 1);
+        SpinnerNumberModel model = new SpinnerNumberModel(16, 1, 1000, 1);
         JSpinner fpsSpinner = new JSpinner(model);
 
-        SpinnerNumberModel lenm = new SpinnerNumberModel(180, 2, 1200, 50);
+        SpinnerNumberModel lenm = new SpinnerNumberModel(90, 2, 1200, 50);
         JSpinner lenSpin = new JSpinner(lenm);
 
         previewButton.addActionListener(new ActionListener() {
@@ -64,38 +67,18 @@ class JMorph extends JFrame {
             public void actionPerformed(ActionEvent e) {
 
                 int frames = (int)lenSpin.getValue();
-                int delay = (int)(1000.0f / (int)fpsSpinner.getValue());
+                int delay = (int)fpsSpinner.getValue();
 
                 JPanel preview = new JPanel();
 
-                preview.setLayout(new GridBagLayout());
+                preview.add(new MorphPreview(a, b, frames, delay));
 
-                GridBagConstraints constraints = new GridBagConstraints();
-                constraints.weightx = 1.0f;
-                constraints.weighty = 1.0f;
-                constraints.fill = GridBagConstraints.BOTH;
-                constraints.gridy = 0;
-
-                preview.add(new MorphPreview(a, b, frames, delay), constraints);
-
-                constraints.weighty = 0.0f;
-                constraints.weightx = 0.0f;
-                constraints.gridy = 1;
-
-                JButton playButton = new JButton("Play");
-                JButton exitButton = new JButton("Exit");
-
-                JPanel controls = new JPanel();
-                controls.add(playButton);
-                controls.add(exitButton);
-
-                preview.add(controls, constraints);
 
                 JOptionPane.showOptionDialog(null, preview, "Preview", JOptionPane.DEFAULT_OPTION, JOptionPane.PLAIN_MESSAGE, null, new Object[]{}, null);
             }
         });
 
-        JSlider gridSizeSlider = new JSlider(JSlider.HORIZONTAL, 1, 10, a.getGridSize());
+        JSlider gridSizeSlider = new JSlider(JSlider.HORIZONTAL, 2, 10, a.getGridSize());
         gridSizeSlider.setMajorTickSpacing(1);
         gridSizeSlider.setPaintTicks(true);
         gridSizeSlider.setSnapToTicks(true);
@@ -111,7 +94,7 @@ class JMorph extends JFrame {
 
         controls.add(new JLabel("Grid Size"));
         controls.add(gridSizeSlider);
-        controls.add(new JLabel("Framerate"));
+        controls.add(new JLabel("Frame Delay"));
         controls.add(fpsSpinner);
         controls.add(new JLabel("# Frames"));
         controls.add(lenSpin);
