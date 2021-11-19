@@ -5,64 +5,78 @@ import java.awt.event.ActionListener;
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
 
+// Morph Preview panel, handles the morph animation preview
 public class MorphPreview extends JPanel {
+    // The timer and current time for our animation
     Timer timer;
+    float time = 0.0f;
 
+    // The vertices and triangles of our grid
     ArrayList<Point2D> vertices;
     ArrayList<Integer> triangles;
 
-    float t = 0.0f;
-
+    // Constructor for our morph preview panel
     MorphPreview(ImageMesh first, ImageMesh second, int frames, int delay) {
+        // Use a black background and grab the first image's size
         setBackground(Color.black);
-        setPreferredSize(new Dimension(372, 372));
+        setPreferredSize(first.getSize());
 
-        // also the first and second image should == size
-        // if first =/= second size in verts/tris, complain...
-
+        // Create a copy of the first image's vertices as a starting point
         vertices = new ArrayList<>(first.vertices);
         triangles = new ArrayList<>(first.triangles);
 
+        // Make deep copies of all the vertices...
         for (int i = 0; i < vertices.size(); i++) {
-            Point2D copy = new Point2D.Double(first.vertices.get(i).getX(),
-                    first.vertices.get(i).getY());
+            Point2D original = first.vertices.get(i);
+            Point2D copy = new Point2D.Double(original.getX(), original.getY());
             vertices.set(i, copy);
         }
 
-        float step = 1.0f / frames;
+        // Set our time step so that after all frames are played time will equal one.
+        float timeStep = 1.0f / frames;
 
+        // Set up our animation timer
         timer = new Timer(delay, new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
+                // Clamp our time so that we don't overshoot vertex positions
+                if (time > 1.0f)
+                    time = 1.0f;
 
+                // Interpolate between the points of the first and second image
                 for (int i = 0; i < vertices.size(); i++) {
+                    Point2D firstVertex = first.vertices.get(i);
+                    Point2D secondVertex = second.vertices.get(i);
 
-                    Point2D v0 = first.vertices.get(i);
-                    Point2D v1 = second.vertices.get(i);
+                    double x = firstVertex.getX() + (secondVertex.getX() - firstVertex.getX()) * time;
+                    double y = firstVertex.getY() + (secondVertex.getY() - firstVertex.getY()) * time;
 
-                    double xi = v0.getX() + (v1.getX() - v0.getX()) * t;
-                    double yi = v0.getY() + (v1.getY() - v0.getY()) * t;
-
-                    vertices.get(i).setLocation(xi, yi);
+                    vertices.get(i).setLocation(x, y);
                 }
 
+                // Repaint the panel and increment the timestep
                 repaint();
-                t += step;
+                time += timeStep;
 
-                if (t >= 1.0f) {
+                // Once the animation completes, ensure all of our points ended up the same as the second image
+                if (time >= 1.0f) {
                     timer.stop();
 
                     for (int i = 0; i < vertices.size(); i++) {
-                        Point2D finalPoint = second.vertices.get(i);
+                        Point2D finalVertex = second.vertices.get(i);
 
-                        double finalX = finalPoint.getX();
-                        double finalY = finalPoint.getY();
+                        double finalX = finalVertex.getX();
+                        double finalY = finalVertex.getY();
 
                         vertices.get(i).setLocation(finalX, finalY);
                     }
+
+                    repaint();
                 }
             }
         });
+
+        // Start our timer to play our animation
         timer.start();
     }
 
@@ -70,24 +84,19 @@ public class MorphPreview extends JPanel {
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
 
-        Dimension d = getSize();
+        // The size of our rendering area
+        Dimension size = getSize();
 
-        GridUtilities.DrawGrid(g, d, vertices, triangles);
+        // Draw our triangle grid
+        ImageMeshRendering.DrawMesh(g, size, vertices, triangles);
 
-        for (Point2D p : vertices) {
+        // Then, for every point in our grid
+        for (Point2D vertex : vertices) {
+            // Set the color for the handles
             g.setColor(Color.cyan);
 
-            double x = p.getX();
-            double y = p.getY();
-
-            double sX = x * d.getWidth();
-            double sY = y * d.getHeight();
-
-            if (x > 0.0 && x < 1.0 &&
-                    y > 0.0 && y < 1.0) {
-                //g.fillRect((int)sX - 3, (int)sY - 3, 6 , 6);
-                g.drawOval((int) sX - 3, (int) sY - 3, 6, 6);
-            }
+            // Use our helper to draw this handle for consistency
+            ImageMeshRendering.DrawHandle(g, size, vertex);
         }
     }
 }
