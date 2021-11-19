@@ -9,12 +9,15 @@ import java.util.ArrayList;
 
 // Image mesh panel, handles rendering an image with a triangle grid overlay with controllable handles
 public class ImageMesh extends JPanel {
-    // Our background image we'll be morphing
-    private BufferedImage image;
-
     // The vertices and triangle indices of our grid
     public ArrayList<Point2D> vertices;
     public ArrayList<Integer> triangles;
+
+    // The other image, a bit hacky. We could try using a listener in the future
+    public ImageMesh other;
+
+    // Our background image we'll be morphing
+    private BufferedImage image;
 
     // The current size of our grid in one dimension
     private int gridSize = 5;
@@ -24,9 +27,6 @@ public class ImageMesh extends JPanel {
 
     // The currently selected point of our partner panel
     private int otherSelectedIndex = -1;
-
-    // The other image, a bit hacky. We could try using a listener in the future
-    public ImageMesh other;
 
     // Image mesh constructor
     ImageMesh() {
@@ -112,6 +112,11 @@ public class ImageMesh extends JPanel {
         });
     }
 
+    // Getter for our grid size
+    int getGridSize() {
+        return gridSize;
+    }
+
     // Setter for our grid size
     void setGridSize(int size) {
         // If our grid size already matches, ignore this command
@@ -124,11 +129,6 @@ public class ImageMesh extends JPanel {
         repaint();
     }
 
-    // Getter for our grid size
-    int getGridSize() {
-        return gridSize;
-    }
-
     // Helper function that generates the grid in this image mesh
     void generateGrid() {
         // Clear the current vertex and triangle data
@@ -139,7 +139,7 @@ public class ImageMesh extends JPanel {
         for (int x = 0; x <= gridSize; x++) {
             for (int y = 0; y <= gridSize; y++) {
                 // Simply create a point at current x and y divided by grid size
-                Point2D vertex = new Point2D.Float((float)x / gridSize, (float)y / gridSize);
+                Point2D vertex = new Point2D.Float((float) x / gridSize, (float) y / gridSize);
                 vertices.add(vertex);
             }
         }

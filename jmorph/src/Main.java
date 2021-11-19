@@ -107,8 +107,8 @@ class JMorph extends JFrame {
                 }
 
                 // Get our total frames and frame delay from the respective spinners
-                int frames = (int)frameCountSpinner.getValue();
-                int delay = (int)delaySpinner.getValue();
+                int frames = (int) frameCountSpinner.getValue();
+                int delay = (int) delaySpinner.getValue();
 
                 // Create a panel for our preview window for later expansion
                 JPanel preview = new JPanel();

@@ -9,11 +9,11 @@ public class ImageMeshRendering {
 
     // Helper method to draw a single scaled line between two points
     static void DrawLine(Graphics g, Dimension d, Point2D first, Point2D second) {
-        int firstX = (int)(first.getX() * d.getWidth());
-        int firstY = (int)(first.getY() * d.getHeight());
+        int firstX = (int) (first.getX() * d.getWidth());
+        int firstY = (int) (first.getY() * d.getHeight());
 
-        int secondX = (int)(second.getX() * d.getWidth());
-        int secondY = (int)(second.getY() * d.getHeight());
+        int secondX = (int) (second.getX() * d.getWidth());
+        int secondY = (int) (second.getY() * d.getHeight());
 
         g.drawLine(firstX, firstY, secondX, secondY);
     }
