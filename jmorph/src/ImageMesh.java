@@ -13,7 +13,7 @@ public class ImageMesh extends JPanel {
     ArrayList<Point2D> vertices;
     ArrayList<Integer> triangles;
 
-    public int subs = 3;
+    public int subs = 5;
 
     Point2D selected = null;
 
@@ -71,11 +71,24 @@ public class ImageMesh extends JPanel {
         });
     }
 
+    void setGridSize(int size) {
+        if (size == subs)
+            return; // ignore
+
+        subs = size;
+        generateHandles();
+        repaint();
+    }
+
+    int getGridSize() {
+        return subs;
+    }
+
     void generateHandles() {
         vertices.clear();
         triangles.clear();
 
-        final int N = subs + 1;
+        final int N = subs;
 
         for (int i = 0; i <= N; i++) {
             for (int j = 0; j <= N; j++) {
@@ -98,8 +111,6 @@ public class ImageMesh extends JPanel {
                 triangles.add(rowz + i);
             }
         }
-
-        System.out.println("Generated " + vertices.size() + " verts with " + triangles.size() + " total tris");
     }
 
     public void setImage(BufferedImage image) {

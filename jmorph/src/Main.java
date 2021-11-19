@@ -1,5 +1,7 @@
 import javax.imageio.ImageIO;
 import javax.swing.*;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -38,12 +40,7 @@ class JMorph extends JFrame {
         JPanel controls = new JPanel();
 
         JButton previewButton = new JButton("Preview");
-        previewButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                JOptionPane.showConfirmDialog(null, new MorphPreview(a, b), "Preview", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
-            }
-        });
+
 
 
 //        JSlider fpsSlider = new JSlider();
@@ -59,9 +56,61 @@ class JMorph extends JFrame {
         SpinnerNumberModel model = new SpinnerNumberModel(30, 1, 120, 1);
         JSpinner fpsSpinner = new JSpinner(model);
 
-        SpinnerNumberModel lenm = new SpinnerNumberModel(180, 30, 900, 50);
+        SpinnerNumberModel lenm = new SpinnerNumberModel(180, 2, 1200, 50);
         JSpinner lenSpin = new JSpinner(lenm);
 
+        previewButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+
+                int frames = (int)lenSpin.getValue();
+                int delay = (int)(1000.0f / (int)fpsSpinner.getValue());
+
+                JPanel preview = new JPanel();
+
+                preview.setLayout(new GridBagLayout());
+
+                GridBagConstraints constraints = new GridBagConstraints();
+                constraints.weightx = 1.0f;
+                constraints.weighty = 1.0f;
+                constraints.fill = GridBagConstraints.BOTH;
+                constraints.gridy = 0;
+
+                preview.add(new MorphPreview(a, b, frames, delay), constraints);
+
+                constraints.weighty = 0.0f;
+                constraints.weightx = 0.0f;
+                constraints.gridy = 1;
+
+                JButton playButton = new JButton("Play");
+                JButton exitButton = new JButton("Exit");
+
+                JPanel controls = new JPanel();
+                controls.add(playButton);
+                controls.add(exitButton);
+
+                preview.add(controls, constraints);
+
+                JOptionPane.showOptionDialog(null, preview, "Preview", JOptionPane.DEFAULT_OPTION, JOptionPane.PLAIN_MESSAGE, null, new Object[]{}, null);
+            }
+        });
+
+        JSlider gridSizeSlider = new JSlider(JSlider.HORIZONTAL, 1, 10, a.getGridSize());
+        gridSizeSlider.setMajorTickSpacing(1);
+        gridSizeSlider.setPaintTicks(true);
+        gridSizeSlider.setSnapToTicks(true);
+        gridSizeSlider.setPaintLabels(true);
+
+        gridSizeSlider.addChangeListener(new ChangeListener() {
+            @Override
+            public void stateChanged(ChangeEvent e) {
+                a.setGridSize(gridSizeSlider.getValue());
+                b.setGridSize(gridSizeSlider.getValue());
+            }
+        });
+
+        controls.add(new JLabel("Grid Size"));
+        controls.add(gridSizeSlider);
         controls.add(new JLabel("Framerate"));
         controls.add(fpsSpinner);
         controls.add(new JLabel("# Frames"));

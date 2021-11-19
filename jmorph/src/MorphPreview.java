@@ -4,7 +4,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
-import java.util.TimerTask;
 
 public class MorphPreview extends JPanel {
     Timer timer;
@@ -14,10 +13,11 @@ public class MorphPreview extends JPanel {
 
     float t = 0.0f;
 
-    MorphPreview(ImageMesh first, ImageMesh second) {
+    MorphPreview(ImageMesh first, ImageMesh second, int frames, int delay) {
         setBackground(Color.black);
         setPreferredSize(new Dimension(372, 372));
 
+        // also the first and second image should == size
         // if first =/= second size in verts/tris, complain...
 
         vertices = new ArrayList<>(first.vertices);
@@ -29,9 +29,9 @@ public class MorphPreview extends JPanel {
             vertices.set(i, copy);
         }
 
-        float step = 1.0f / (60.0f * 3.0f);
+        float step = 1.0f / frames;
 
-        timer = new Timer(16, new ActionListener() {
+        timer = new Timer(delay, new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
 
