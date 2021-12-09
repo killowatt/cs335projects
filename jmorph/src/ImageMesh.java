@@ -13,11 +13,15 @@ public class ImageMesh extends JPanel {
     public ArrayList<Point2D> vertices;
     public ArrayList<Integer> triangles;
 
+    public ArrayList<Point2D> initialV;
+
     // The other image, a bit hacky. We could try using a listener in the future
     public ImageMesh other;
 
     // Our background image we'll be morphing
     private BufferedImage image;
+
+    private BufferedImage warped;
 
     // The current size of our grid in one dimension
     private int gridSize = 5;
@@ -35,6 +39,8 @@ public class ImageMesh extends JPanel {
         // Create our vertex and triangle arrays
         vertices = new ArrayList<>();
         triangles = new ArrayList<>();
+
+        initialV = new ArrayList<>();
 
         // Generate our grid
         generateGrid();
@@ -112,6 +118,47 @@ public class ImageMesh extends JPanel {
         });
     }
 
+    void doBrain() {
+        warped = new BufferedImage(image.getWidth(this), image.getHeight(this), BufferedImage.TYPE_INT_RGB);
+
+        double scaleX = getSize().width;
+        double scaleY = getSize().height;
+
+        for (int i = 0; i < triangles.size(); i += 3) {
+
+
+            double[] srcX = new double[3];
+            double[] srcY = new double[3];
+            double[] dstX = new double[3];
+            double[] dstY = new double[3];
+
+            int i1 = triangles.get(i);
+            int i2 = triangles.get(i + 1);
+            int i3 = triangles.get(i + 2);
+
+            srcX[0] = initialV.get(i1).getX() * scaleX;
+            srcX[1] = initialV.get(i2).getX() * scaleX;
+            srcX[2] = initialV.get(i3).getX() * scaleX;
+
+            srcY[0] = initialV.get(i1).getY() * scaleY;
+            srcY[1] = initialV.get(i2).getY() * scaleY;
+            srcY[2] = initialV.get(i3).getY() * scaleY;
+
+            dstX[0] = vertices.get(i1).getX() * scaleX;
+            dstX[1] = vertices.get(i2).getX() * scaleX;
+            dstX[2] = vertices.get(i3).getX() * scaleX;
+
+            dstY[0] = vertices.get(i1).getY() * scaleY;
+            dstY[1] = vertices.get(i2).getY() * scaleY;
+            dstY[2] = vertices.get(i3).getY() * scaleY;
+
+            ImageMeshRendering.warpTriangle(image, warped, srcX, srcY, dstX, dstY, null, null, false);
+
+        }
+
+        repaint();
+    }
+
     // Getter for our grid size
     int getGridSize() {
         return gridSize;
@@ -135,12 +182,16 @@ public class ImageMesh extends JPanel {
         vertices.clear();
         triangles.clear();
 
+        initialV.clear();
+
         // Generate the vertices of our grid iterating over x and y
         for (int x = 0; x <= gridSize; x++) {
             for (int y = 0; y <= gridSize; y++) {
                 // Simply create a point at current x and y divided by grid size
                 Point2D vertex = new Point2D.Float((float) x / gridSize, (float) y / gridSize);
+                Point2D again = new Point2D.Float((float) x / gridSize, (float) y / gridSize);
                 vertices.add(vertex);
+                initialV.add(again);
             }
         }
 
@@ -190,8 +241,10 @@ public class ImageMesh extends JPanel {
         // The size of our rendering area
         Dimension size = getSize();
 
-        // If our image exists, render it first
-        if (image != null)
+        if (warped != null) {
+            g.drawImage(warped, 0, 0, size.width, size.height, null);
+        }
+        else if (image != null)
             g.drawImage(image, 0, 0, size.width, size.height, null);
 
         // Draw our triangle grid

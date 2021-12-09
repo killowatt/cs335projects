@@ -37,6 +37,8 @@ class JMorph extends JFrame {
 
         JButton previewButton = new JButton("Preview");
 
+        JButton testButton = new JButton("TEST");
+
         SpinnerNumberModel delayModel = new SpinnerNumberModel(16, 1, 1000, 1);
         JSpinner delaySpinner = new JSpinner(delayModel);
 
@@ -59,7 +61,7 @@ class JMorph extends JFrame {
         controls.add(frameCountSpinner);
 
         controls.add(previewButton);
-
+        controls.add(testButton);
 
         // Add our images panel and controls panel to the main panel
         GridBagConstraints constraints = new GridBagConstraints();
@@ -119,6 +121,13 @@ class JMorph extends JFrame {
                 // Create a dialog box with our preview panel as the only content
                 JOptionPane.showOptionDialog(null, preview, "Preview", JOptionPane.DEFAULT_OPTION,
                         JOptionPane.PLAIN_MESSAGE, null, new Object[]{}, null);
+            }
+        });
+
+        testButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                leftImageMesh.doBrain();
             }
         });
 
