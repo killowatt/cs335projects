@@ -59,7 +59,7 @@ public class ImageMeshRendering {
         }
     }
 
-    public static void warpTriangle
+    public static void WarpTriangle
             (BufferedImage src,
              BufferedImage dest,
              double[] srcX,
@@ -125,16 +125,9 @@ public class ImageMeshRendering {
         // Yes, the result comes out of the solver as a column vector.
         // But each vector is a row of the affine transformation matrix we
         // seek (mapping the start triangle onto the destination triangle)
-        Matrix affineRow1;
-        Matrix affineRow2;
-        try {
-            affineRow1 = A.solve(bx);
-            affineRow2 = A.solve(by);
-        }
-        catch (RuntimeException rt) {
-            // ignore?
-            return;
-        }
+        Matrix affineRow1 = A.solve(bx);
+        Matrix affineRow2 = A.solve(by);
+
         // Now that we have solved for the correct affine transformation
         // mapping the source triangle to the destination triangle, we
         // instantiate the Java affine transform object with the solved

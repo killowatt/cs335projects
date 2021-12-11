@@ -19,7 +19,7 @@ public class ImageMesh extends JPanel {
     public ImageMesh other;
 
     // Our background image we'll be morphing
-    private BufferedImage image;
+    public BufferedImage image;
 
     private BufferedImage warped;
 
@@ -116,47 +116,6 @@ public class ImageMesh extends JPanel {
                 repaint();
             }
         });
-    }
-
-    void doBrain() {
-        warped = new BufferedImage(image.getWidth(this), image.getHeight(this), BufferedImage.TYPE_INT_RGB);
-
-        double scaleX = getSize().width;
-        double scaleY = getSize().height;
-
-        for (int i = 0; i < triangles.size(); i += 3) {
-
-
-            double[] srcX = new double[3];
-            double[] srcY = new double[3];
-            double[] dstX = new double[3];
-            double[] dstY = new double[3];
-
-            int i1 = triangles.get(i);
-            int i2 = triangles.get(i + 1);
-            int i3 = triangles.get(i + 2);
-
-            srcX[0] = initialV.get(i1).getX() * scaleX;
-            srcX[1] = initialV.get(i2).getX() * scaleX;
-            srcX[2] = initialV.get(i3).getX() * scaleX;
-
-            srcY[0] = initialV.get(i1).getY() * scaleY;
-            srcY[1] = initialV.get(i2).getY() * scaleY;
-            srcY[2] = initialV.get(i3).getY() * scaleY;
-
-            dstX[0] = vertices.get(i1).getX() * scaleX;
-            dstX[1] = vertices.get(i2).getX() * scaleX;
-            dstX[2] = vertices.get(i3).getX() * scaleX;
-
-            dstY[0] = vertices.get(i1).getY() * scaleY;
-            dstY[1] = vertices.get(i2).getY() * scaleY;
-            dstY[2] = vertices.get(i3).getY() * scaleY;
-
-            ImageMeshRendering.warpTriangle(image, warped, srcX, srcY, dstX, dstY, null, null, false);
-
-        }
-
-        repaint();
     }
 
     // Getter for our grid size

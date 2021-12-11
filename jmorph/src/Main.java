@@ -37,7 +37,7 @@ class JMorph extends JFrame {
 
         JButton previewButton = new JButton("Preview");
 
-        JButton testButton = new JButton("TEST");
+        JButton renderButton = new JButton("Render");
 
         SpinnerNumberModel delayModel = new SpinnerNumberModel(16, 1, 1000, 1);
         JSpinner delaySpinner = new JSpinner(delayModel);
@@ -61,7 +61,7 @@ class JMorph extends JFrame {
         controls.add(frameCountSpinner);
 
         controls.add(previewButton);
-        controls.add(testButton);
+        controls.add(renderButton);
 
         // Add our images panel and controls panel to the main panel
         GridBagConstraints constraints = new GridBagConstraints();
@@ -116,7 +116,7 @@ class JMorph extends JFrame {
                 JPanel preview = new JPanel();
 
                 // Create and add our morph preview panel to our frame
-                preview.add(new MorphPreview(leftImageMesh, rightImageMesh, frames, delay));
+                preview.add(new MorphPreview(leftImageMesh, rightImageMesh, frames, delay, false));
 
                 // Create a dialog box with our preview panel as the only content
                 JOptionPane.showOptionDialog(null, preview, "Preview", JOptionPane.DEFAULT_OPTION,
@@ -124,10 +124,9 @@ class JMorph extends JFrame {
             }
         });
 
-        testButton.addActionListener(new ActionListener() {
+        renderButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                leftImageMesh.doBrain();
             }
         });
 

@@ -3,6 +3,7 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.geom.Point2D;
+import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 
 // Morph Preview panel, handles the morph animation preview
@@ -15,11 +16,24 @@ public class MorphPreview extends JPanel {
     ArrayList<Point2D> vertices;
     ArrayList<Integer> triangles;
 
+    BufferedImage warped;
+    BufferedImage warped2;
+
+    ImageMesh firs;
+    ImageMesh secd;
+
+    boolean isRendering = false;
+
     // Constructor for our morph preview panel
-    MorphPreview(ImageMesh first, ImageMesh second, int frames, int delay) {
+    MorphPreview(ImageMesh first, ImageMesh second, int frames, int delay, boolean renderToFile) {
+        isRendering = renderToFile;
+
         // Use a black background and grab the first image's size
         setBackground(Color.black);
         setPreferredSize(first.getSize());
+
+        firs = first;
+        secd = second;
 
         // Create a copy of the first image's vertices as a starting point
         vertices = new ArrayList<>(first.vertices);
@@ -55,6 +69,8 @@ public class MorphPreview extends JPanel {
                 }
 
                 // Repaint the panel and increment the timestep
+                warped = getwarp(firs.image, firs.vertices, vertices);
+                warped2 = getwarp(secd.image, secd.vertices, vertices);
                 repaint();
                 time += timeStep;
 
@@ -71,6 +87,7 @@ public class MorphPreview extends JPanel {
                         vertices.get(i).setLocation(finalX, finalY);
                     }
 
+                    time = 1.0f;
                     repaint();
                 }
             }
@@ -80,9 +97,64 @@ public class MorphPreview extends JPanel {
         timer.start();
     }
 
+    BufferedImage getwarp(BufferedImage srcimg, ArrayList<Point2D> from, ArrayList<Point2D> to) {
+        BufferedImage result = new BufferedImage(firs.image.getWidth(this), firs.image.getHeight(this), BufferedImage.TYPE_INT_RGB);
+
+        double scaleX = getSize().width;
+        double scaleY = getSize().height;
+
+        for (int i = 0; i < triangles.size(); i += 3) {
+
+
+            double[] srcX = new double[3];
+            double[] srcY = new double[3];
+            double[] dstX = new double[3];
+            double[] dstY = new double[3];
+
+            int i1 = triangles.get(i);
+            int i2 = triangles.get(i + 1);
+            int i3 = triangles.get(i + 2);
+
+            srcX[0] = from.get(i1).getX() * scaleX;
+            srcX[1] = from.get(i2).getX() * scaleX;
+            srcX[2] = from.get(i3).getX() * scaleX;
+
+            srcY[0] = from.get(i1).getY() * scaleY;
+            srcY[1] = from.get(i2).getY() * scaleY;
+            srcY[2] = from.get(i3).getY() * scaleY;
+
+            dstX[0] = to.get(i1).getX() * scaleX;
+            dstX[1] = to.get(i2).getX() * scaleX;
+            dstX[2] = to.get(i3).getX() * scaleX;
+
+            dstY[0] = to.get(i1).getY() * scaleY;
+            dstY[1] = to.get(i2).getY() * scaleY;
+            dstY[2] = to.get(i3).getY() * scaleY;
+
+            ImageMeshRendering.WarpTriangle(srcimg, result, srcX, srcY, dstX, dstY, null, null, false);
+        }
+
+        return result;
+    }
+
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
+
+        //g.drawImage(firstimg, 0, 0, firstimg.getWidth(), firstimg.getHeight(), null);
+        if (warped != null)
+            g.drawImage(warped, 0, 0, warped.getWidth(), warped.getHeight(), null);
+
+        if (warped2 != null) {
+            System.out.println(time);
+            AlphaComposite ac = AlphaComposite.getInstance(AlphaComposite.SRC_OVER, time);
+            Graphics2D g2D = (Graphics2D)g;
+            g2D.setComposite(ac);
+            g2D.drawImage(warped2, 0, 0, warped2.getWidth(), warped2.getHeight(), null);
+        }
+
+        if (isRendering)
+            return; // don't draw points in non-preview
 
         // The size of our rendering area
         Dimension size = getSize();
