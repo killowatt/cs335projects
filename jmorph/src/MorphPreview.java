@@ -1,9 +1,13 @@
+import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
+import java.nio.Buffer;
 import java.util.ArrayList;
 
 // Morph Preview panel, handles the morph animation preview
@@ -22,7 +26,11 @@ public class MorphPreview extends JPanel {
     ImageMesh firs;
     ImageMesh secd;
 
+    BufferedImage frame = null;
+
     boolean isRendering = false;
+
+    int currFrame = 0;
 
     // Constructor for our morph preview panel
     MorphPreview(ImageMesh first, ImageMesh second, int frames, int delay, boolean renderToFile) {
@@ -71,8 +79,12 @@ public class MorphPreview extends JPanel {
                 // Repaint the panel and increment the timestep
                 warped = getwarp(firs.image, firs.vertices, vertices);
                 warped2 = getwarp(secd.image, secd.vertices, vertices);
+
+                outputImage();
                 repaint();
+
                 time += timeStep;
+                currFrame++;
 
                 // Once the animation completes, ensure all of our points ended up the same as the second image
                 if (time >= 1.0f) {
@@ -137,24 +149,41 @@ public class MorphPreview extends JPanel {
         return result;
     }
 
-    @Override
-    protected void paintComponent(Graphics g) {
-        super.paintComponent(g);
+    void outputImage() {
+        frame = new BufferedImage(firs.image.getWidth(), firs.image.getHeight(), BufferedImage.TYPE_INT_RGB);
+        Graphics2D g2D = frame.createGraphics();
 
         //g.drawImage(firstimg, 0, 0, firstimg.getWidth(), firstimg.getHeight(), null);
         if (warped != null)
-            g.drawImage(warped, 0, 0, warped.getWidth(), warped.getHeight(), null);
+            g2D.drawImage(warped, 0, 0, warped.getWidth(), warped.getHeight(), null);
 
         if (warped2 != null) {
             System.out.println(time);
             AlphaComposite ac = AlphaComposite.getInstance(AlphaComposite.SRC_OVER, time);
-            Graphics2D g2D = (Graphics2D)g;
             g2D.setComposite(ac);
             g2D.drawImage(warped2, 0, 0, warped2.getWidth(), warped2.getHeight(), null);
         }
 
+        if (isRendering) {
+            try {
+                String fn = "frames/frame" + currFrame + ".png";
+                ImageIO.write(frame, "png", new File(fn));
+                System.out.println(fn + " wrote to disk");
+            } catch (IOException e) {
+                System.out.println("Failed to write??");
+            }
+        }
+    }
+
+    @Override
+    protected void paintComponent(Graphics g) {
+        super.paintComponent(g);
+
+        if (frame != null)
+            g.drawImage(frame, 0, 0, frame.getWidth(), frame.getHeight(), null);
+
         if (isRendering)
-            return; // don't draw points in non-preview
+            return; // we dont draw points in render preview
 
         // The size of our rendering area
         Dimension size = getSize();

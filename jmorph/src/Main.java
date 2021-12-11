@@ -127,6 +127,30 @@ class JMorph extends JFrame {
         renderButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
+
+                // AAAAAAAAAAAAA
+                // AAAAAAAAAAAAAAA
+                // AAAAAAAAAAAAAAAAAAAAAAA
+
+                // If our left image and right image are not of equal size, show an error
+                if (!leftImageMesh.getSize().equals(rightImageMesh.getSize())) {
+                    JOptionPane.showMessageDialog(null, "Images must be of equal size.", "Error", JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+
+                // Get our total frames and frame delay from the respective spinners
+                int frames = (int) frameCountSpinner.getValue();
+                int delay = (int) delaySpinner.getValue();
+
+                // Create a panel for our preview window for later expansion
+                JPanel preview = new JPanel();
+
+                // Create and add our morph preview panel to our frame
+                preview.add(new MorphPreview(leftImageMesh, rightImageMesh, frames, delay, true));
+
+                // Create a dialog box with our preview panel as the only content
+                JOptionPane.showOptionDialog(null, preview, "Preview", JOptionPane.DEFAULT_OPTION,
+                        JOptionPane.PLAIN_MESSAGE, null, new Object[]{}, null);
             }
         });
 
