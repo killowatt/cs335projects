@@ -59,6 +59,9 @@ public class MorphPreview extends JPanel {
         // Set our time step so that after all frames are played time will equal one.
         float timeStep = 1.0f / frames;
 
+        // directory for frames
+        new File("frames/").mkdir();
+
         // Set up our animation timer
         timer = new Timer(delay, new ActionListener() {
             @Override
@@ -85,12 +88,17 @@ public class MorphPreview extends JPanel {
                 outputImage();
                 repaint();
 
+                System.out.println("tick " + time);
+
                 time += timeStep;
                 currFrame++;
 
                 // Once the animation completes, ensure all of our points ended up the same as the second image
                 if (time >= 1.0f) {
                     timer.stop();
+
+                    if (isRendering)
+                        JOptionPane.showMessageDialog(null, frames + " frames written to disk", "Render Complete", JOptionPane.INFORMATION_MESSAGE);
 
                     for (int i = 0; i < vertices.size(); i++) {
                         Point2D finalVertex = second.vertices.get(i);
@@ -109,6 +117,10 @@ public class MorphPreview extends JPanel {
 
         // Start our timer to play our animation
         timer.start();
+    }
+
+    void stopPreview() {
+        timer.stop();
     }
 
     BufferedImage getwarp(BufferedImage srcimg, ArrayList<Point2D> from, ArrayList<Point2D> to) {
@@ -149,7 +161,6 @@ public class MorphPreview extends JPanel {
         return result;
     }
 
-    // TODO: use BRIGHTNESS applied image from image mesh
     void outputImage() {
         frame = new BufferedImage(firs.image.getWidth(), firs.image.getHeight(), BufferedImage.TYPE_INT_RGB);
         Graphics2D g2D = frame.createGraphics();
@@ -159,8 +170,6 @@ public class MorphPreview extends JPanel {
             g2D.drawImage(warped, 0, 0, warped.getWidth(), warped.getHeight(), null);
 
         if (warped2 != null) {
-            System.out.println(time);
-
             AlphaComposite ac = AlphaComposite.getInstance(AlphaComposite.SRC_OVER, time);
             g2D.setComposite(ac);
 
@@ -170,12 +179,12 @@ public class MorphPreview extends JPanel {
         g2D.drawString("Test", 16, 16);
 
         if (isRendering) {
+            String fn = "frames/frame" + currFrame + ".png";
             try {
-                String fn = "frames/frame" + currFrame + ".png";
                 ImageIO.write(frame, "png", new File(fn));
-                System.out.println(fn + " wrote to disk");
             } catch (IOException e) {
-                System.out.println("Failed to write??");
+                // TODO: end the preview
+                JOptionPane.showMessageDialog(null, "Failed to save " + fn + " to disk!", "Render Failed", JOptionPane.ERROR_MESSAGE);
             }
         }
     }

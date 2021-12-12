@@ -6,7 +6,6 @@ import java.awt.event.MouseMotionAdapter;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
 import java.awt.image.*;
-import java.nio.Buffer;
 import java.util.ArrayList;
 
 // Image mesh panel, handles rendering an image with a triangle grid overlay with controllable handles
@@ -33,6 +32,8 @@ public class ImageMesh extends JPanel {
     float brightness = 1.0f;
 
     public BufferedImage getimageok() {
+        if (image == null)
+            return null;
 
         RescaleOp op = new RescaleOp(brightness, 0, null);
 

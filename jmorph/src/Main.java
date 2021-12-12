@@ -9,8 +9,8 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 
-class ImagePanel extends JPanel {
-    ImagePanel(ImageMesh imageMesh, JMorph morph) {
+class ImageMeshPanel extends JPanel {
+    ImageMeshPanel(ImageMesh imageMesh, JMorph morph) {
         setLayout(new GridBagLayout());
 
         JPanel leftimgcontrols = new JPanel();
@@ -59,6 +59,12 @@ class ImagePanel extends JPanel {
 
 // Main JMorph frame, handles the creation and layout of the main window
 class JMorph extends JFrame {
+    ImageMesh leftImageMesh;
+    ImageMesh rightImageMesh;
+
+    JSpinner frameCountSpinner;
+    JSpinner delaySpinner;
+
     JMorph() {
         // Set our window title to JMorph
         super("JMorph");
@@ -74,11 +80,11 @@ class JMorph extends JFrame {
         // Images panel
         JPanel imagesPanel = new JPanel();
 
-        ImageMesh leftImageMesh = new ImageMesh();
-        ImageMesh rightImageMesh = new ImageMesh();
+        leftImageMesh = new ImageMesh();
+        rightImageMesh = new ImageMesh();
 
-        ImagePanel leftImagePanel = new ImagePanel(leftImageMesh, this);
-        ImagePanel rightImagePanel = new ImagePanel(rightImageMesh, this);
+        ImageMeshPanel leftImagePanel = new ImageMeshPanel(leftImageMesh, this);
+        ImageMeshPanel rightImagePanel = new ImageMeshPanel(rightImageMesh, this);
 
         // aa
         imagesPanel.add(leftImagePanel);
@@ -93,13 +99,13 @@ class JMorph extends JFrame {
         JButton renderButton = new JButton("Render");
 
         SpinnerNumberModel delayModel = new SpinnerNumberModel(16, 1, 1000, 1);
-        JSpinner delaySpinner = new JSpinner(delayModel);
+        delaySpinner = new JSpinner(delayModel);
 
         SpinnerNumberModel frameCountModel = new SpinnerNumberModel(90, 2, 1200, 50);
-        JSpinner frameCountSpinner = new JSpinner(frameCountModel);
+        frameCountSpinner = new JSpinner(frameCountModel);
 
         JSlider gridSizeSlider = new JSlider(JSlider.HORIZONTAL, 2, 20, leftImageMesh.getGridSize());
-        gridSizeSlider.setMajorTickSpacing(3);
+        gridSizeSlider.setMajorTickSpacing(2);
         gridSizeSlider.setMinorTickSpacing(1);
         gridSizeSlider.setPaintTicks(true);
         gridSizeSlider.setSnapToTicks(true);
@@ -142,55 +148,14 @@ class JMorph extends JFrame {
         previewButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                // If our left image and right image are not of equal size, show an error
-//                if (!leftImageMesh.getSize().equals(rightImageMesh.getSize())) {
-//                    JOptionPane.showMessageDialog(null, "Images must be of equal size.", "Error", JOptionPane.ERROR_MESSAGE);
-//                    return;
-//                }
-
-                // Get our total frames and frame delay from the respective spinners
-                int frames = (int) frameCountSpinner.getValue();
-                int delay = (int) delaySpinner.getValue();
-
-                // Create a panel for our preview window for later expansion
-                JPanel preview = new JPanel();
-
-                // Create and add our morph preview panel to our frame
-                preview.add(new MorphPreview(leftImageMesh, rightImageMesh, frames, delay, false));
-
-                // Create a dialog box with our preview panel as the only content
-                JOptionPane.showOptionDialog(null, preview, "Preview", JOptionPane.DEFAULT_OPTION,
-                        JOptionPane.PLAIN_MESSAGE, null, new Object[]{}, null);
+                showpreview(false);
             }
         });
 
         renderButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-
-                // AAAAAAAAAAAAA
-                // AAAAAAAAAAAAAAA
-                // AAAAAAAAAAAAAAAAAAAAAAA
-
-                // If our left image and right image are not of equal size, show an error
-//                if (!leftImageMesh.getSize().equals(rightImageMesh.getSize())) {
-//                    JOptionPane.showMessageDialog(null, "Images must be of equal size.", "Error", JOptionPane.ERROR_MESSAGE);
-//                    return;
-//                }
-
-                // Get our total frames and frame delay from the respective spinners
-                int frames = (int) frameCountSpinner.getValue();
-                int delay = (int) delaySpinner.getValue();
-
-                // Create a panel for our preview window for later expansion
-                JPanel preview = new JPanel();
-
-                // Create and add our morph preview panel to our frame
-                preview.add(new MorphPreview(leftImageMesh, rightImageMesh, frames, delay, true));
-
-                // Create a dialog box with our preview panel as the only content
-                JOptionPane.showOptionDialog(null, preview, "Preview", JOptionPane.DEFAULT_OPTION,
-                        JOptionPane.PLAIN_MESSAGE, null, new Object[]{}, null);
+                showpreview(true);
             }
         });
 
@@ -241,6 +206,34 @@ class JMorph extends JFrame {
                     JOptionPane.ERROR_MESSAGE);
         }
         return null;
+    }
+
+    void showpreview(boolean isRender) {
+        // Get our total frames and frame delay from the respective spinners
+        int frames = (int) frameCountSpinner.getValue();
+        int delay = (int) delaySpinner.getValue();
+
+        previewdialog pv = new previewdialog(leftImageMesh, rightImageMesh, frames, delay, isRender);
+
+        pv.dispose();
+    }
+}
+
+class previewdialog extends JDialog {
+    previewdialog(ImageMesh left, ImageMesh right, int frames, int delay, boolean isRender) {
+        super((Frame)null, true);
+
+        setDefaultCloseOperation(DISPOSE_ON_CLOSE);
+
+        MorphPreview morphPreview = new MorphPreview(left, right, frames, delay, isRender);
+
+        add(morphPreview);
+
+        pack();
+        setLocationRelativeTo(null);
+        setVisible(true);
+
+        morphPreview.stopPreview();
     }
 }
 
