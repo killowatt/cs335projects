@@ -213,27 +213,7 @@ class JMorph extends JFrame {
         int frames = (int) frameCountSpinner.getValue();
         int delay = (int) delaySpinner.getValue();
 
-        previewdialog pv = new previewdialog(leftImageMesh, rightImageMesh, frames, delay, isRender);
-
-        pv.dispose();
-    }
-}
-
-class previewdialog extends JDialog {
-    previewdialog(ImageMesh left, ImageMesh right, int frames, int delay, boolean isRender) {
-        super((Frame)null, true);
-
-        setDefaultCloseOperation(DISPOSE_ON_CLOSE);
-
-        MorphPreview morphPreview = new MorphPreview(left, right, frames, delay, isRender);
-
-        add(morphPreview);
-
-        pack();
-        setLocationRelativeTo(null);
-        setVisible(true);
-
-        morphPreview.stopPreview();
+        WarpDialog pv = new WarpDialog(leftImageMesh, rightImageMesh, frames, delay, isRender);
     }
 }
 

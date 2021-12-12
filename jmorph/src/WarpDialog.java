@@ -9,11 +9,26 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 
-// TODO: prevent closing when writing files
-// TODO: end animation/writing file prematurely if closed
+public class WarpDialog extends JDialog {
+    WarpDialog(ImageMesh left, ImageMesh right, int frames, int delay, boolean isRender) {
+        super((Frame)null, true);
+
+        setDefaultCloseOperation(DISPOSE_ON_CLOSE);
+
+        PreviewPanel morphPreview = new PreviewPanel(left, right, frames, delay, isRender);
+
+        add(morphPreview);
+
+        pack();
+        setLocationRelativeTo(null);
+        setVisible(true);
+
+        morphPreview.stopPreview();
+    }
+}
 
 // Morph Preview panel, handles the morph animation preview
-public class MorphPreview extends JPanel {
+class PreviewPanel extends JPanel {
     // The timer and current time for our animation
     Timer timer;
     float time = 0.0f;
@@ -35,7 +50,7 @@ public class MorphPreview extends JPanel {
     int currFrame = 0;
 
     // Constructor for our morph preview panel
-    MorphPreview(ImageMesh first, ImageMesh second, int frames, int delay, boolean renderToFile) {
+    PreviewPanel(ImageMesh first, ImageMesh second, int frames, int delay, boolean renderToFile) {
         isRendering = renderToFile;
 
         // Use a black background and grab the first image's size
@@ -62,6 +77,7 @@ public class MorphPreview extends JPanel {
         // directory for frames
         new File("frames/").mkdir();
 
+        // TODO: ignore timer delay on rendering
         // Set up our animation timer
         timer = new Timer(delay, new ActionListener() {
             @Override
@@ -82,13 +98,11 @@ public class MorphPreview extends JPanel {
                 }
 
                 // Repaint the panel and increment the timestep
-                warped = getwarp(firs.getimageok(), firs.vertices, vertices);
-                warped2 = getwarp(secd.getimageok(), secd.vertices, vertices);
+                warped = getwarp(firs.getImage(), firs.vertices, vertices);
+                warped2 = getwarp(secd.getImage(), secd.vertices, vertices);
 
                 outputImage();
                 repaint();
-
-                System.out.println("tick " + time);
 
                 time += timeStep;
                 currFrame++;
@@ -124,7 +138,7 @@ public class MorphPreview extends JPanel {
     }
 
     BufferedImage getwarp(BufferedImage srcimg, ArrayList<Point2D> from, ArrayList<Point2D> to) {
-        BufferedImage result = new BufferedImage(firs.image.getWidth(this), firs.image.getHeight(this), BufferedImage.TYPE_INT_RGB);
+        BufferedImage result = new BufferedImage(firs.getWidth(), firs.getHeight(), BufferedImage.TYPE_INT_RGB);
 
         double scaleX = getSize().width;
         double scaleY = getSize().height;
@@ -162,7 +176,7 @@ public class MorphPreview extends JPanel {
     }
 
     void outputImage() {
-        frame = new BufferedImage(firs.image.getWidth(), firs.image.getHeight(), BufferedImage.TYPE_INT_RGB);
+        frame = new BufferedImage(firs.getWidth(), firs.getHeight(), BufferedImage.TYPE_INT_RGB);
         Graphics2D g2D = frame.createGraphics();
 
         //g.drawImage(firstimg, 0, 0, firstimg.getWidth(), firstimg.getHeight(), null);

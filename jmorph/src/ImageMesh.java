@@ -5,7 +5,9 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
-import java.awt.image.*;
+import java.awt.image.AffineTransformOp;
+import java.awt.image.BufferedImage;
+import java.awt.image.RescaleOp;
 import java.util.ArrayList;
 
 // Image mesh panel, handles rendering an image with a triangle grid overlay with controllable handles
@@ -18,28 +20,19 @@ public class ImageMesh extends JPanel {
     public ImageMesh other;
 
     // Our background image we'll be morphing
-    public BufferedImage image;
+    private BufferedImage image;
 
     // The current size of our grid in one dimension
     private int gridSize = 5;
+
+    // The current brightness of our image with 1.0 being no change
+    private float brightness = 1.0f;
 
     // The currently selected point of this panel
     private Point2D selected = null;
 
     // The currently selected point of our partner panel
     private int otherSelectedIndex = -1;
-
-    float brightness = 1.0f;
-
-    public BufferedImage getimageok() {
-        if (image == null)
-            return null;
-
-        RescaleOp op = new RescaleOp(brightness, 0, null);
-
-        return op.filter(image, null);
-        //g.drawImage(image, 0, 0, size.width, size.height, null);
-    }
 
     // Image mesh constructor
     ImageMesh() {
@@ -78,7 +71,8 @@ public class ImageMesh extends JPanel {
                     Point2D scaled = new Point2D.Double(vertex.getX() * scaleX, vertex.getY() * scaleY);
 
                     // Then see if the distance between our click and this point is less than our point size
-                    if (e.getPoint().distance(scaled) <= 3.0) {
+                    // We add one to the radius to make points easier to click
+                    if (e.getPoint().distance(scaled) <= ImageMeshRendering.HANDLE_RADIUS + 1) {
                         // If so, make this vertex our selected vertex and repaint
                         selected = vertex;
                         repaint();
@@ -125,7 +119,17 @@ public class ImageMesh extends JPanel {
         });
     }
 
-    float getBrightness() { return brightness; }
+    public BufferedImage getImage() {
+        if (image == null)
+            return null;
+
+        RescaleOp op = new RescaleOp(brightness, 0, null);
+        return op.filter(image, null);
+    }
+
+    float getBrightness() {
+        return brightness;
+    }
 
     void setBrightness(float value) {
         if (value == brightness)
@@ -188,32 +192,35 @@ public class ImageMesh extends JPanel {
     }
 
     // Setter for the image background of this image mesh
-    public void setImage(BufferedImage inimg) {
-        if (inimg != null && other.image != null) {
-            BufferedImage otherimg = other.image;
-
-            BufferedImage copy = new BufferedImage(otherimg.getWidth(), otherimg.getHeight(), otherimg.getType());
+    public void setImage(BufferedImage image) {
+        // If the other image is already set, resize this one to match
+        if (image != null && other.image != null) {
+            // Create a buffered image matching the size of the other image
+            BufferedImage copy = new BufferedImage(other.image.getWidth(), other.image.getHeight(), other.image.getType());
             copy.getGraphics();
 
-            float scaleX = (float)otherimg.getWidth() / inimg.getWidth();
-            float scaleY = (float)otherimg.getHeight() / inimg.getHeight();
+            // Get scale factors to match the other image
+            float scaleX = (float) other.image.getWidth() / image.getWidth();
+            float scaleY = (float) other.image.getHeight() / image.getHeight();
 
+            // Scale the image using a bilinear filter
             AffineTransform scale = AffineTransform.getScaleInstance(scaleX, scaleY);
             AffineTransformOp op = new AffineTransformOp(scale, AffineTransformOp.TYPE_BILINEAR);
 
-            this.image = op.filter(inimg, null);
-        }
-        else
-        {
-            this.image = inimg;
+            // Set our image to the rescaled version of the input
+            this.image = op.filter(image, null);
+
+        } else {
+            // If the other image isn't set, just use the image as is
+            this.image = image;
         }
 
         // Re-generate our grid
         generateGrid();
 
         // If the image isn't null, set our size to match, otherwise use the default
-        if (image != null)
-            setPreferredSize(new Dimension(image.getWidth(), image.getHeight()));
+        if (this.image != null)
+            setPreferredSize(new Dimension(this.image.getWidth(), this.image.getHeight()));
         else
             setPreferredSize(new Dimension(372, 372));
 
@@ -230,12 +237,9 @@ public class ImageMesh extends JPanel {
         // The size of our rendering area
         Dimension size = getSize();
 
+        // If we have an image, draw it using our getImage method as the source
         if (image != null) {
-            RescaleOp op = new RescaleOp(brightness, 0, null);
-            BufferedImage lol = op.filter(image, null);
-
-            g.drawImage(lol, 0, 0, size.width, size.height, null);
-            //g.drawImage(image, 0, 0, size.width, size.height, null);
+            g.drawImage(getImage(), 0, 0, size.width, size.height, null);
         }
 
         // Draw our triangle grid
