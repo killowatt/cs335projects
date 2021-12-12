@@ -25,10 +25,49 @@ class JMorph extends JFrame {
 
         // Images panel
         JPanel imagesPanel = new JPanel();
+
+        JPanel leftImagePanel = new JPanel();
+        leftImagePanel.setLayout(new GridBagLayout());
+
         ImageMesh leftImageMesh = new ImageMesh();
         ImageMesh rightImageMesh = new ImageMesh();
 
-        imagesPanel.add(leftImageMesh);
+
+
+        // left image panel
+        JPanel leftimgcontrols = new JPanel();
+
+        JSlider lBrightnessSlider = new JSlider(JSlider.HORIZONTAL, 0, 1000, 100);
+        lBrightnessSlider.setMajorTickSpacing(100);
+        lBrightnessSlider.setPaintTicks(true);
+        lBrightnessSlider.setSnapToTicks(false);
+
+        JButton openButton = new JButton("Open");
+
+        leftimgcontrols.add(new JLabel("Brightness"));
+        leftimgcontrols.add(lBrightnessSlider);
+        leftimgcontrols.add(openButton);
+
+        GridBagConstraints constr = new GridBagConstraints();
+
+        constr.weightx = 1.0f;
+        constr.weighty = 1.0f;
+
+        leftImagePanel.add(leftImageMesh, constr);
+
+        constr.gridx = 0;
+        constr.gridy = 1;
+
+        leftImagePanel.add(leftimgcontrols, constr);
+
+
+
+        // right iamge panel
+        JPanel rightimgpanel = new JPanel();
+
+
+        // aa
+        imagesPanel.add(leftImagePanel);
         imagesPanel.add(rightImageMesh);
 
 
@@ -45,8 +84,9 @@ class JMorph extends JFrame {
         SpinnerNumberModel frameCountModel = new SpinnerNumberModel(90, 2, 1200, 50);
         JSpinner frameCountSpinner = new JSpinner(frameCountModel);
 
-        JSlider gridSizeSlider = new JSlider(JSlider.HORIZONTAL, 2, 10, leftImageMesh.getGridSize());
-        gridSizeSlider.setMajorTickSpacing(1);
+        JSlider gridSizeSlider = new JSlider(JSlider.HORIZONTAL, 2, 20, leftImageMesh.getGridSize());
+        gridSizeSlider.setMajorTickSpacing(3);
+        gridSizeSlider.setMinorTickSpacing(1);
         gridSizeSlider.setPaintTicks(true);
         gridSizeSlider.setSnapToTicks(true);
         gridSizeSlider.setPaintLabels(true);
@@ -62,6 +102,7 @@ class JMorph extends JFrame {
 
         controls.add(previewButton);
         controls.add(renderButton);
+
 
         // Add our images panel and controls panel to the main panel
         GridBagConstraints constraints = new GridBagConstraints();
@@ -98,15 +139,23 @@ class JMorph extends JFrame {
         leftImageMesh.other = rightImageMesh;
         rightImageMesh.other = leftImageMesh;
 
+        lBrightnessSlider.addChangeListener(new ChangeListener() {
+            @Override
+            public void stateChanged(ChangeEvent e) {
+                float value = lBrightnessSlider.getValue() / 100.0f;
+                leftImageMesh.setBrightness(value);
+            }
+        });
+
         // Set our preview button to show our preview window
         previewButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 // If our left image and right image are not of equal size, show an error
-                if (!leftImageMesh.getSize().equals(rightImageMesh.getSize())) {
-                    JOptionPane.showMessageDialog(null, "Images must be of equal size.", "Error", JOptionPane.ERROR_MESSAGE);
-                    return;
-                }
+//                if (!leftImageMesh.getSize().equals(rightImageMesh.getSize())) {
+//                    JOptionPane.showMessageDialog(null, "Images must be of equal size.", "Error", JOptionPane.ERROR_MESSAGE);
+//                    return;
+//                }
 
                 // Get our total frames and frame delay from the respective spinners
                 int frames = (int) frameCountSpinner.getValue();
@@ -133,10 +182,10 @@ class JMorph extends JFrame {
                 // AAAAAAAAAAAAAAAAAAAAAAA
 
                 // If our left image and right image are not of equal size, show an error
-                if (!leftImageMesh.getSize().equals(rightImageMesh.getSize())) {
-                    JOptionPane.showMessageDialog(null, "Images must be of equal size.", "Error", JOptionPane.ERROR_MESSAGE);
-                    return;
-                }
+//                if (!leftImageMesh.getSize().equals(rightImageMesh.getSize())) {
+//                    JOptionPane.showMessageDialog(null, "Images must be of equal size.", "Error", JOptionPane.ERROR_MESSAGE);
+//                    return;
+//                }
 
                 // Get our total frames and frame delay from the respective spinners
                 int frames = (int) frameCountSpinner.getValue();

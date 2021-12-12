@@ -3,8 +3,9 @@ import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
+import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
-import java.awt.image.BufferedImage;
+import java.awt.image.*;
 import java.util.ArrayList;
 
 // Image mesh panel, handles rendering an image with a triangle grid overlay with controllable handles
@@ -12,8 +13,6 @@ public class ImageMesh extends JPanel {
     // The vertices and triangle indices of our grid
     public ArrayList<Point2D> vertices;
     public ArrayList<Integer> triangles;
-
-    public ArrayList<Point2D> initialV;
 
     // The other image, a bit hacky. We could try using a listener in the future
     public ImageMesh other;
@@ -32,6 +31,8 @@ public class ImageMesh extends JPanel {
     // The currently selected point of our partner panel
     private int otherSelectedIndex = -1;
 
+    float brightness = 1.0f;
+
     // Image mesh constructor
     ImageMesh() {
         super();
@@ -39,8 +40,6 @@ public class ImageMesh extends JPanel {
         // Create our vertex and triangle arrays
         vertices = new ArrayList<>();
         triangles = new ArrayList<>();
-
-        initialV = new ArrayList<>();
 
         // Generate our grid
         generateGrid();
@@ -118,6 +117,16 @@ public class ImageMesh extends JPanel {
         });
     }
 
+    float getBrightness() { return brightness; }
+
+    void setBrightness(float value) {
+        if (value == brightness)
+            return; // ignore
+
+        brightness = value;
+        repaint();
+    }
+
     // Getter for our grid size
     int getGridSize() {
         return gridSize;
@@ -141,16 +150,12 @@ public class ImageMesh extends JPanel {
         vertices.clear();
         triangles.clear();
 
-        initialV.clear();
-
         // Generate the vertices of our grid iterating over x and y
         for (int x = 0; x <= gridSize; x++) {
             for (int y = 0; y <= gridSize; y++) {
                 // Simply create a point at current x and y divided by grid size
                 Point2D vertex = new Point2D.Float((float) x / gridSize, (float) y / gridSize);
-                Point2D again = new Point2D.Float((float) x / gridSize, (float) y / gridSize);
                 vertices.add(vertex);
-                initialV.add(again);
             }
         }
 
@@ -175,8 +180,25 @@ public class ImageMesh extends JPanel {
     }
 
     // Setter for the image background of this image mesh
-    public void setImage(BufferedImage image) {
-        this.image = image;
+    public void setImage(BufferedImage inimg) {
+        if (inimg != null && other.image != null) {
+            BufferedImage otherimg = other.image;
+
+            BufferedImage copy = new BufferedImage(otherimg.getWidth(), otherimg.getHeight(), otherimg.getType());
+            copy.getGraphics();
+
+            float scaleX = (float)otherimg.getWidth() / inimg.getWidth();
+            float scaleY = (float)otherimg.getHeight() / inimg.getHeight();
+
+            AffineTransform scale = AffineTransform.getScaleInstance(scaleX, scaleY);
+            AffineTransformOp op = new AffineTransformOp(scale, AffineTransformOp.TYPE_BILINEAR);
+
+            this.image = op.filter(inimg, null);
+        }
+        else
+        {
+            this.image = inimg;
+        }
 
         // Re-generate our grid
         generateGrid();
@@ -203,8 +225,13 @@ public class ImageMesh extends JPanel {
         if (warped != null) {
             g.drawImage(warped, 0, 0, size.width, size.height, null);
         }
-        else if (image != null)
-            g.drawImage(image, 0, 0, size.width, size.height, null);
+        else if (image != null) {
+            RescaleOp op = new RescaleOp(brightness, 0, null);
+            BufferedImage lol = op.filter(image, null);
+
+            g.drawImage(lol, 0, 0, size.width, size.height, null);
+            //g.drawImage(image, 0, 0, size.width, size.height, null);
+        }
 
         // Draw our triangle grid
         ImageMeshRendering.DrawMesh(g, size, vertices, triangles);

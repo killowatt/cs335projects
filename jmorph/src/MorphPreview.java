@@ -116,8 +116,6 @@ public class MorphPreview extends JPanel {
         double scaleY = getSize().height;
 
         for (int i = 0; i < triangles.size(); i += 3) {
-
-
             double[] srcX = new double[3];
             double[] srcY = new double[3];
             double[] dstX = new double[3];
@@ -149,6 +147,7 @@ public class MorphPreview extends JPanel {
         return result;
     }
 
+    // TODO: use BRIGHTNESS applied image from image mesh
     void outputImage() {
         frame = new BufferedImage(firs.image.getWidth(), firs.image.getHeight(), BufferedImage.TYPE_INT_RGB);
         Graphics2D g2D = frame.createGraphics();
@@ -159,10 +158,14 @@ public class MorphPreview extends JPanel {
 
         if (warped2 != null) {
             System.out.println(time);
+
             AlphaComposite ac = AlphaComposite.getInstance(AlphaComposite.SRC_OVER, time);
             g2D.setComposite(ac);
-            g2D.drawImage(warped2, 0, 0, warped2.getWidth(), warped2.getHeight(), null);
+
+            g2D.drawImage(warped2, 0, 0, warped.getWidth(), warped.getHeight(), null);
         }
+
+        g2D.drawString("Test", 16, 16);
 
         if (isRendering) {
             try {
