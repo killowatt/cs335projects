@@ -6,6 +6,7 @@ import java.awt.event.MouseMotionAdapter;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
 import java.awt.image.*;
+import java.nio.Buffer;
 import java.util.ArrayList;
 
 // Image mesh panel, handles rendering an image with a triangle grid overlay with controllable handles
@@ -20,8 +21,6 @@ public class ImageMesh extends JPanel {
     // Our background image we'll be morphing
     public BufferedImage image;
 
-    private BufferedImage warped;
-
     // The current size of our grid in one dimension
     private int gridSize = 5;
 
@@ -32,6 +31,14 @@ public class ImageMesh extends JPanel {
     private int otherSelectedIndex = -1;
 
     float brightness = 1.0f;
+
+    public BufferedImage getimageok() {
+
+        RescaleOp op = new RescaleOp(brightness, 0, null);
+
+        return op.filter(image, null);
+        //g.drawImage(image, 0, 0, size.width, size.height, null);
+    }
 
     // Image mesh constructor
     ImageMesh() {
@@ -222,10 +229,7 @@ public class ImageMesh extends JPanel {
         // The size of our rendering area
         Dimension size = getSize();
 
-        if (warped != null) {
-            g.drawImage(warped, 0, 0, size.width, size.height, null);
-        }
-        else if (image != null) {
+        if (image != null) {
             RescaleOp op = new RescaleOp(brightness, 0, null);
             BufferedImage lol = op.filter(image, null);
 

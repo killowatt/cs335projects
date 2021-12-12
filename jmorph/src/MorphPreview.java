@@ -10,6 +10,9 @@ import java.io.IOException;
 import java.nio.Buffer;
 import java.util.ArrayList;
 
+// TODO: prevent closing when writing files
+// TODO: end animation/writing file prematurely if closed
+
 // Morph Preview panel, handles the morph animation preview
 public class MorphPreview extends JPanel {
     // The timer and current time for our animation
@@ -77,8 +80,8 @@ public class MorphPreview extends JPanel {
                 }
 
                 // Repaint the panel and increment the timestep
-                warped = getwarp(firs.image, firs.vertices, vertices);
-                warped2 = getwarp(secd.image, secd.vertices, vertices);
+                warped = getwarp(firs.getimageok(), firs.vertices, vertices);
+                warped2 = getwarp(secd.getimageok(), secd.vertices, vertices);
 
                 outputImage();
                 repaint();

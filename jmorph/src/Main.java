@@ -29,6 +29,9 @@ class JMorph extends JFrame {
         JPanel leftImagePanel = new JPanel();
         leftImagePanel.setLayout(new GridBagLayout());
 
+        JPanel rightImagePanel = new JPanel();
+        rightImagePanel.setLayout(new GridBagLayout());
+
         ImageMesh leftImageMesh = new ImageMesh();
         ImageMesh rightImageMesh = new ImageMesh();
 
@@ -44,9 +47,9 @@ class JMorph extends JFrame {
 
         JButton openButton = new JButton("Open");
 
+        leftimgcontrols.add(openButton);
         leftimgcontrols.add(new JLabel("Brightness"));
         leftimgcontrols.add(lBrightnessSlider);
-        leftimgcontrols.add(openButton);
 
         GridBagConstraints constr = new GridBagConstraints();
 
@@ -63,12 +66,37 @@ class JMorph extends JFrame {
 
 
         // right iamge panel
-        JPanel rightimgpanel = new JPanel();
+        JPanel rightimgcontrols = new JPanel();
+
+        JSlider rBrightnessSlider = new JSlider(JSlider.HORIZONTAL, 0, 1000, 100);
+        rBrightnessSlider.setMajorTickSpacing(100);
+        rBrightnessSlider.setPaintTicks(true);
+        rBrightnessSlider.setSnapToTicks(false);
+
+        JButton openButtonR = new JButton("Open");
+
+        rightimgcontrols.add(openButtonR);
+        rightimgcontrols.add(new JLabel("Brightness"));
+        rightimgcontrols.add(rBrightnessSlider);
+
+        GridBagConstraints constrz = new GridBagConstraints();
+
+        constrz.weightx = 1.0f;
+        constrz.weighty = 1.0f;
+
+        rightImagePanel.add(rightImageMesh, constrz);
+
+        constrz.gridx = 0;
+        constrz.gridy = 1;
+
+        rightImagePanel.add(rightimgcontrols, constrz);
+
+
 
 
         // aa
         imagesPanel.add(leftImagePanel);
-        imagesPanel.add(rightImageMesh);
+        imagesPanel.add(rightImagePanel);
 
 
         // User controls panel
@@ -120,30 +148,39 @@ class JMorph extends JFrame {
         getContentPane().add(panel);
 
 
-        // Menu Bar
-        JMenuBar menuBar = new JMenuBar();
-
-        JMenu fileMenu = new JMenu("File");
-        JMenuItem openLeftImage = new JMenuItem("Open Left Image");
-        JMenuItem openRightImage = new JMenuItem("Open Right Image");
-
-        fileMenu.add(openLeftImage);
-        fileMenu.add(openRightImage);
-
-        menuBar.add(fileMenu);
-
-        setJMenuBar(menuBar);
-
-
         // Set our left and right images other field
         leftImageMesh.other = rightImageMesh;
         rightImageMesh.other = leftImageMesh;
+
+        openButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                leftImageMesh.setImage(getImageInput());
+                pack();
+            }
+        });
+
+        openButtonR.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                rightImageMesh.setImage(getImageInput());
+                pack();
+            }
+        });
 
         lBrightnessSlider.addChangeListener(new ChangeListener() {
             @Override
             public void stateChanged(ChangeEvent e) {
                 float value = lBrightnessSlider.getValue() / 100.0f;
                 leftImageMesh.setBrightness(value);
+            }
+        });
+
+        rBrightnessSlider.addChangeListener(new ChangeListener() {
+            @Override
+            public void stateChanged(ChangeEvent e) {
+                float value = rBrightnessSlider.getValue() / 100.0f;
+                rightImageMesh.setBrightness(value);
             }
         });
 
@@ -209,24 +246,6 @@ class JMorph extends JFrame {
             public void stateChanged(ChangeEvent e) {
                 leftImageMesh.setGridSize(gridSizeSlider.getValue());
                 rightImageMesh.setGridSize(gridSizeSlider.getValue());
-            }
-        });
-
-        // Set up our left image open button to set the left image
-        openLeftImage.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                leftImageMesh.setImage(getImageInput());
-                pack();
-            }
-        });
-
-        // Set up our right image open button to set the right image
-        openRightImage.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                rightImageMesh.setImage(getImageInput());
-                pack();
             }
         });
 
