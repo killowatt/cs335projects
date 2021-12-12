@@ -9,35 +9,10 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 
-// Main JMorph frame, handles the creation and layout of the main window
-class JMorph extends JFrame {
-    JMorph() {
-        // Set our window title to JMorph
-        super("JMorph");
+class ImagePanel extends JPanel {
+    ImagePanel(ImageMesh imageMesh, JMorph morph) {
+        setLayout(new GridBagLayout());
 
-        // Set so when the window is closed the application also exits
-        setDefaultCloseOperation(EXIT_ON_CLOSE);
-
-        // Main panel
-        JPanel panel = new JPanel();
-        panel.setLayout(new GridBagLayout());
-
-
-        // Images panel
-        JPanel imagesPanel = new JPanel();
-
-        JPanel leftImagePanel = new JPanel();
-        leftImagePanel.setLayout(new GridBagLayout());
-
-        JPanel rightImagePanel = new JPanel();
-        rightImagePanel.setLayout(new GridBagLayout());
-
-        ImageMesh leftImageMesh = new ImageMesh();
-        ImageMesh rightImageMesh = new ImageMesh();
-
-
-
-        // left image panel
         JPanel leftimgcontrols = new JPanel();
 
         JSlider lBrightnessSlider = new JSlider(JSlider.HORIZONTAL, 0, 1000, 100);
@@ -56,43 +31,54 @@ class JMorph extends JFrame {
         constr.weightx = 1.0f;
         constr.weighty = 1.0f;
 
-        leftImagePanel.add(leftImageMesh, constr);
+        add(imageMesh, constr);
 
         constr.gridx = 0;
         constr.gridy = 1;
 
-        leftImagePanel.add(leftimgcontrols, constr);
+        add(leftimgcontrols, constr);
 
 
+        lBrightnessSlider.addChangeListener(new ChangeListener() {
+            @Override
+            public void stateChanged(ChangeEvent e) {
+                float value = lBrightnessSlider.getValue() / 100.0f;
+                imageMesh.setBrightness(value);
+            }
+        });
 
-        // right iamge panel
-        JPanel rightimgcontrols = new JPanel();
+        openButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                imageMesh.setImage(morph.getImageInput());
+                morph.pack();
+            }
+        });
+    }
+}
 
-        JSlider rBrightnessSlider = new JSlider(JSlider.HORIZONTAL, 0, 1000, 100);
-        rBrightnessSlider.setMajorTickSpacing(100);
-        rBrightnessSlider.setPaintTicks(true);
-        rBrightnessSlider.setSnapToTicks(false);
+// Main JMorph frame, handles the creation and layout of the main window
+class JMorph extends JFrame {
+    JMorph() {
+        // Set our window title to JMorph
+        super("JMorph");
 
-        JButton openButtonR = new JButton("Open");
+        // Set so when the window is closed the application also exits
+        setDefaultCloseOperation(EXIT_ON_CLOSE);
 
-        rightimgcontrols.add(openButtonR);
-        rightimgcontrols.add(new JLabel("Brightness"));
-        rightimgcontrols.add(rBrightnessSlider);
-
-        GridBagConstraints constrz = new GridBagConstraints();
-
-        constrz.weightx = 1.0f;
-        constrz.weighty = 1.0f;
-
-        rightImagePanel.add(rightImageMesh, constrz);
-
-        constrz.gridx = 0;
-        constrz.gridy = 1;
-
-        rightImagePanel.add(rightimgcontrols, constrz);
+        // Main panel
+        JPanel panel = new JPanel();
+        panel.setLayout(new GridBagLayout());
 
 
+        // Images panel
+        JPanel imagesPanel = new JPanel();
 
+        ImageMesh leftImageMesh = new ImageMesh();
+        ImageMesh rightImageMesh = new ImageMesh();
+
+        ImagePanel leftImagePanel = new ImagePanel(leftImageMesh, this);
+        ImagePanel rightImagePanel = new ImagePanel(rightImageMesh, this);
 
         // aa
         imagesPanel.add(leftImagePanel);
@@ -151,38 +137,6 @@ class JMorph extends JFrame {
         // Set our left and right images other field
         leftImageMesh.other = rightImageMesh;
         rightImageMesh.other = leftImageMesh;
-
-        openButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                leftImageMesh.setImage(getImageInput());
-                pack();
-            }
-        });
-
-        openButtonR.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                rightImageMesh.setImage(getImageInput());
-                pack();
-            }
-        });
-
-        lBrightnessSlider.addChangeListener(new ChangeListener() {
-            @Override
-            public void stateChanged(ChangeEvent e) {
-                float value = lBrightnessSlider.getValue() / 100.0f;
-                leftImageMesh.setBrightness(value);
-            }
-        });
-
-        rBrightnessSlider.addChangeListener(new ChangeListener() {
-            @Override
-            public void stateChanged(ChangeEvent e) {
-                float value = rBrightnessSlider.getValue() / 100.0f;
-                rightImageMesh.setBrightness(value);
-            }
-        });
 
         // Set our preview button to show our preview window
         previewButton.addActionListener(new ActionListener() {
