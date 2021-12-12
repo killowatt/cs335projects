@@ -24,7 +24,7 @@ public class MorphGridRendering {
     }
 
     // Primary method for rendering our grids given a set of vertices and triangle indices
-    public static void DrawMesh(Graphics g, Dimension d, ArrayList<Point2D> vertices, ArrayList<Integer> triangles) {
+    public static void DrawMesh(Graphics g, int x, int y, Dimension d, ArrayList<Point2D> vertices, ArrayList<Integer> triangles) {
         // Make our triangles gray
         g.setColor(Color.gray);
 

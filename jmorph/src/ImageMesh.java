@@ -238,20 +238,30 @@ public class ImageMesh extends JPanel {
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
 
-        float panelAspect = (float)getWidth() / (float)getHeight();
-        float imageAspect = (float)image.getWidth() / (float)image.getHeight();
-
-        
-
-        BufferedImage renderinto = new BufferedImage()
-
-        // The size of our rendering area
-        Dimension size = getSize();
+        int nw = getWidth();
+        int nh = getHeight();
 
         // If we have an image, draw it using our getImage method as the source
         if (image != null) {
-            g.drawImage(getImage(), 0, 0, size.width, size.height, null);
+            float panelAspect = (float)getWidth() / (float)getHeight();
+            float imageAspect = (float)image.getWidth() / (float)image.getHeight();
+
+            float widthScale = (float)getHeight() / (float)image.getHeight() * image.getWidth();
+            float heightScale = (float)getWidth() / (float)image.getWidth() * image.getHeight();
+
+            nw = panelAspect > imageAspect ? (int)widthScale : getWidth();
+            nh = panelAspect > imageAspect ? getHeight() : (int)heightScale;
+
+            int nx = panelAspect > imageAspect ? getWidth() / 2 - nw / 2: 0;
+            int ny = panelAspect > imageAspect ? 0 : getHeight() / 2 - nh / 2;
+
+            System.out.println(nw + " " + nh + "  pos " + nx + " " + ny);
+
+            g.drawImage(getImage(), nx, ny, nw, nh, null);
         }
+
+        // The size of our rendering area
+        Dimension size = new Dimension(nw, nh);
 
         // Draw our triangle grid
         MorphGridRendering.DrawMesh(g, size, vertices, triangles);
