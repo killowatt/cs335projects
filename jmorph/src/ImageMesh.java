@@ -72,7 +72,7 @@ public class ImageMesh extends JPanel {
 
                     // Then see if the distance between our click and this point is less than our point size
                     // We add one to the radius to make points easier to click
-                    if (e.getPoint().distance(scaled) <= ImageMeshRendering.HANDLE_RADIUS + 1) {
+                    if (e.getPoint().distance(scaled) <= MorphGridRendering.HANDLE_RADIUS + 1) {
                         // If so, make this vertex our selected vertex and repaint
                         selected = vertex;
                         repaint();
@@ -118,6 +118,10 @@ public class ImageMesh extends JPanel {
             }
         });
     }
+
+    public int getWidthXX() { return image.getWidth(); }
+
+    public int getHeightXX() { return image.getHeight(); }
 
     public BufferedImage getImage() {
         if (image == null)
@@ -234,6 +238,13 @@ public class ImageMesh extends JPanel {
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
 
+        float panelAspect = (float)getWidth() / (float)getHeight();
+        float imageAspect = (float)image.getWidth() / (float)image.getHeight();
+
+        
+
+        BufferedImage renderinto = new BufferedImage()
+
         // The size of our rendering area
         Dimension size = getSize();
 
@@ -243,7 +254,7 @@ public class ImageMesh extends JPanel {
         }
 
         // Draw our triangle grid
-        ImageMeshRendering.DrawMesh(g, size, vertices, triangles);
+        MorphGridRendering.DrawMesh(g, size, vertices, triangles);
 
         // Then, for every point in our grid
         for (int i = 0; i < vertices.size(); i++) {
@@ -257,7 +268,7 @@ public class ImageMesh extends JPanel {
                 g.setColor(Color.cyan);
 
             // Use our helper to draw this handle for consistency
-            ImageMeshRendering.DrawHandle(g, size, vertex);
+            MorphGridRendering.DrawHandle(g, size, vertex);
         }
     }
 }

@@ -13,6 +13,15 @@ class ImageMeshPanel extends JPanel {
     ImageMeshPanel(ImageMesh imageMesh, JMorph morph) {
         setLayout(new GridBagLayout());
 
+
+
+        GridBagConstraints czs = new GridBagConstraints();
+        czs.fill = GridBagConstraints.BOTH;
+        czs.weighty = 1.0f;
+        czs.weightx = 1.0f;
+
+
+
         JPanel leftimgcontrols = new JPanel();
 
         JSlider lBrightnessSlider = new JSlider(JSlider.HORIZONTAL, 0, 1000, 100);
@@ -28,10 +37,10 @@ class ImageMeshPanel extends JPanel {
 
         GridBagConstraints constr = new GridBagConstraints();
 
-        constr.weightx = 1.0f;
-        constr.weighty = 1.0f;
+        //constr.weightx = 1.0f;
+        //constr.weighty = 1.0f;
 
-        add(imageMesh, constr);
+        add(imageMesh, czs);
 
         constr.gridx = 0;
         constr.gridy = 1;
@@ -79,6 +88,7 @@ class JMorph extends JFrame {
 
         // Images panel
         JPanel imagesPanel = new JPanel();
+        imagesPanel.setLayout(new GridBagLayout());
 
         leftImageMesh = new ImageMesh();
         rightImageMesh = new ImageMesh();
@@ -87,8 +97,19 @@ class JMorph extends JFrame {
         ImageMeshPanel rightImagePanel = new ImageMeshPanel(rightImageMesh, this);
 
         // aa
-        imagesPanel.add(leftImagePanel);
-        imagesPanel.add(rightImagePanel);
+        GridBagConstraints czs = new GridBagConstraints();
+        czs.fill = GridBagConstraints.BOTH;
+        czs.weighty = 1.0f;
+        czs.weightx = 1.0f;
+
+        czs.insets = new Insets(8, 8, 8, 4);
+
+        imagesPanel.add(leftImagePanel, czs);
+
+        czs.insets.right = 8;
+        czs.insets.left = 4;
+
+        imagesPanel.add(rightImagePanel, czs);
 
 
         // User controls panel
@@ -114,11 +135,11 @@ class JMorph extends JFrame {
         controls.add(new JLabel("Grid Size"));
         controls.add(gridSizeSlider);
 
+        controls.add(new JLabel("Frames"));
+        controls.add(frameCountSpinner);
+
         controls.add(new JLabel("Frame Delay"));
         controls.add(delaySpinner);
-
-        controls.add(new JLabel("# Frames"));
-        controls.add(frameCountSpinner);
 
         controls.add(previewButton);
         controls.add(renderButton);

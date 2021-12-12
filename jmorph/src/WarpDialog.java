@@ -55,10 +55,11 @@ class PreviewPanel extends JPanel {
 
         // Use a black background and grab the first image's size
         setBackground(Color.black);
-        setPreferredSize(first.getSize());
 
         firs = first;
         secd = second;
+
+        setPreferredSize(new Dimension(firs.getWidthXX(), firs.getHeightXX()));
 
         // Create a copy of the first image's vertices as a starting point
         vertices = new ArrayList<>(first.vertices);
@@ -138,7 +139,7 @@ class PreviewPanel extends JPanel {
     }
 
     BufferedImage getwarp(BufferedImage srcimg, ArrayList<Point2D> from, ArrayList<Point2D> to) {
-        BufferedImage result = new BufferedImage(firs.getWidth(), firs.getHeight(), BufferedImage.TYPE_INT_RGB);
+        BufferedImage result = new BufferedImage(firs.getWidthXX(), firs.getHeightXX(), BufferedImage.TYPE_INT_RGB);
 
         double scaleX = getSize().width;
         double scaleY = getSize().height;
@@ -169,14 +170,14 @@ class PreviewPanel extends JPanel {
             dstY[1] = to.get(i2).getY() * scaleY;
             dstY[2] = to.get(i3).getY() * scaleY;
 
-            ImageMeshRendering.WarpTriangle(srcimg, result, srcX, srcY, dstX, dstY, null, null, false);
+            MorphGridRendering.WarpTriangle(srcimg, result, srcX, srcY, dstX, dstY, null, null, false);
         }
 
         return result;
     }
 
     void outputImage() {
-        frame = new BufferedImage(firs.getWidth(), firs.getHeight(), BufferedImage.TYPE_INT_RGB);
+        frame = new BufferedImage(firs.getWidthXX(), firs.getHeightXX(), BufferedImage.TYPE_INT_RGB);
         Graphics2D g2D = frame.createGraphics();
 
         //g.drawImage(firstimg, 0, 0, firstimg.getWidth(), firstimg.getHeight(), null);
@@ -189,8 +190,6 @@ class PreviewPanel extends JPanel {
 
             g2D.drawImage(warped2, 0, 0, warped.getWidth(), warped.getHeight(), null);
         }
-
-        g2D.drawString("Test", 16, 16);
 
         if (isRendering) {
             String fn = "frames/frame" + currFrame + ".png";
@@ -217,7 +216,7 @@ class PreviewPanel extends JPanel {
         Dimension size = getSize();
 
         // Draw our triangle grid
-        ImageMeshRendering.DrawMesh(g, size, vertices, triangles);
+        MorphGridRendering.DrawMesh(g, size, vertices, triangles);
 
         // Then, for every point in our grid
         for (Point2D vertex : vertices) {
@@ -225,7 +224,7 @@ class PreviewPanel extends JPanel {
             g.setColor(Color.cyan);
 
             // Use our helper to draw this handle for consistency
-            ImageMeshRendering.DrawHandle(g, size, vertex);
+            MorphGridRendering.DrawHandle(g, size, vertex);
         }
     }
 }

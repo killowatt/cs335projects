@@ -8,7 +8,7 @@ import java.util.ArrayList;
 import Jama.*;
 
 // Image mesh rendering class, helper since we need to render grids in both the morph preview and image mesh classes
-public class ImageMeshRendering {
+public class MorphGridRendering {
     static final int HANDLE_SIZE = 6;
     static final int HANDLE_RADIUS = HANDLE_SIZE / 2;
 
