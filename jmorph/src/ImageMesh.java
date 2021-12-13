@@ -128,6 +128,9 @@ public class ImageMesh extends JPanel {
         return op.filter(image, null);
     }
 
+    public int getImageWidth() { return image.getWidth(); }
+    public int getImageHeight() { return image.getHeight(); }
+
     // Setter for the image background of this image mesh
     public void setImage(BufferedImage image) {
         // If the other image is already set, resize this one to match

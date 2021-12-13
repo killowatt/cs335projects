@@ -5,10 +5,11 @@ import javax.swing.event.ChangeListener;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.ComponentAdapter;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+
+// TODO: test not providing images etc
 
 class ImageMeshPanel extends JPanel {
     ImageMeshPanel(ImageMesh imageMesh, JMorph morph) {
@@ -121,9 +122,6 @@ class JMorph extends JFrame {
 
         JButton renderButton = new JButton("Render");
 
-        SpinnerNumberModel delayModel = new SpinnerNumberModel(16, 1, 1000, 1);
-        delaySpinner = new JSpinner(delayModel);
-
         SpinnerNumberModel frameCountModel = new SpinnerNumberModel(90, 2, 1200, 50);
         frameCountSpinner = new JSpinner(frameCountModel);
 
@@ -140,8 +138,6 @@ class JMorph extends JFrame {
         controls.add(new JLabel("Frames"));
         controls.add(frameCountSpinner);
 
-        controls.add(new JLabel("Frame Delay"));
-        controls.add(delaySpinner);
 
         controls.add(previewButton);
         controls.add(renderButton);
@@ -234,9 +230,8 @@ class JMorph extends JFrame {
     void showpreview(boolean isRender) {
         // Get our total frames and frame delay from the respective spinners
         int frames = (int) frameCountSpinner.getValue();
-        int delay = (int) delaySpinner.getValue();
 
-        WarpDialog pv = new WarpDialog(leftImageMesh, rightImageMesh, frames, delay, isRender);
+        MorphDialog pv = new MorphDialog(leftImageMesh, rightImageMesh, frames, isRender);
     }
 }
 

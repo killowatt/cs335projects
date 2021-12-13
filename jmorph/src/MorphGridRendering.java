@@ -1,10 +1,10 @@
+import Jama.Matrix;
+
 import java.awt.*;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.GeneralPath;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
-
-import Jama.*;
 
 // Image mesh rendering class, helper since we need to render grids in both the morph preview and image mesh classes
 public class MorphGridRendering {
@@ -58,14 +58,12 @@ public class MorphGridRendering {
         }
     }
 
-    // Warp triangle method for warping triangles
-    public static void WarpTriangle
-            (BufferedImage src,
-             BufferedImage dest,
-             double[] srcX,
-             double[] srcY,
-             double[] dstX,
-             double[] dstY) {
+    // Warp triangle method for warping triangles given source and destination vertices
+    public static void MorphTriangle
+    (BufferedImage sourceImage,
+     BufferedImage destinationImage,
+     Vertex[] sourceVertices,
+     Vertex[] destinationVertices) {
         // This is sourced from the provided warpJAMA example code
 
         // Solves the two 3x3 systems of equations for the affine
@@ -87,15 +85,15 @@ public class MorphGridRendering {
         // with 3 rows and 1 column.
         // Also, just like arrays, the JAMA matrix object indexes its
         // rows and columns starting with 0.
-        double [][] Aarray = new double [3][3];
-        double [][] BdestX = new double [3][1];
-        double [][] BdestY = new double [3][1];
-        for( int i= 0; i<3; ++i){
-            Aarray[i][0] = srcX[i];
-            Aarray[i][1] = srcY[i];
+        double[][] Aarray = new double[3][3];
+        double[][] BdestX = new double[3][1];
+        double[][] BdestY = new double[3][1];
+        for (int i = 0; i < 3; ++i) {
+            Aarray[i][0] = sourceVertices[i].x;
+            Aarray[i][1] = sourceVertices[i].y;
             Aarray[i][2] = 1.0;
-            BdestX[i][0] = dstX[i];
-            BdestY[i][0] = dstY[i];
+            BdestX[i][0] = destinationVertices[i].x;
+            BdestY[i][0] = destinationVertices[i].y;
         }
 
         // The matrix "A", which is the same for both systems to be solved,
@@ -134,14 +132,14 @@ public class MorphGridRendering {
         // The order matters, if parameters are transposed the transformation
         // will not be correct.
         AffineTransform af = new
-                AffineTransform(affineRow1.get(0,0), affineRow2.get(0,0),
-                affineRow1.get(1,0), affineRow2.get(1,0),
-                affineRow1.get(2,0), affineRow2.get(2,0));
+                AffineTransform(affineRow1.get(0, 0), affineRow2.get(0, 0),
+                affineRow1.get(1, 0), affineRow2.get(1, 0),
+                affineRow1.get(2, 0), affineRow2.get(2, 0));
 
         // Get the graphics context for the destination image
         // This destination image is the output image, produced by
         // rendering from the source to the destination
-        Graphics2D g2 = dest.createGraphics();
+        Graphics2D g2 = destinationImage.createGraphics();
 
         // Set the aliasing and interpolation settings
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
@@ -150,10 +148,10 @@ public class MorphGridRendering {
         // Create the clip region in the destination image as a "path.
         // This region is the destination triangle, D
         GeneralPath destPath = new GeneralPath(GeneralPath.WIND_EVEN_ODD);
-        destPath.moveTo((float)dstX[0], (float)dstY[0]);
-        destPath.lineTo((float)dstX[1], dstY[1]);
-        destPath.lineTo((float)dstX[2], dstY[2]);
-        destPath.lineTo((float)dstX[0], dstY[0]);
+        destPath.moveTo((float) destinationVertices[0].x, (float) destinationVertices[0].y);
+        destPath.lineTo((float) destinationVertices[1].x, destinationVertices[1].y);
+        destPath.lineTo((float) destinationVertices[2].x, destinationVertices[2].y);
+        destPath.lineTo((float) destinationVertices[0].x, destinationVertices[0].y);
 
         // Apply the clip region so that any pixels that fall outside
         // this region will be clipped
@@ -166,7 +164,7 @@ public class MorphGridRendering {
 
         // Map the pixels from the source image into the destination
         // according to the destination image's graphics context
-        g2.drawImage(src, 0, 0, null);
+        g2.drawImage(sourceImage, 0, 0, null);
         g2.dispose();
     }
 }
