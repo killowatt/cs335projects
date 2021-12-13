@@ -1,7 +1,6 @@
 import java.awt.*;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.GeneralPath;
-import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 
@@ -59,21 +58,15 @@ public class MorphGridRendering {
         }
     }
 
+    // Warp triangle method for warping triangles
     public static void WarpTriangle
             (BufferedImage src,
              BufferedImage dest,
              double[] srcX,
              double[] srcY,
              double[] dstX,
-             double[] dstY,
-             Object ALIASING,
-             Object INTERPOLATION,
-             Boolean clearBackground) {
-
-        if( ALIASING == null )
-            ALIASING = RenderingHints.VALUE_ANTIALIAS_ON;
-        if( INTERPOLATION == null )
-            INTERPOLATION = RenderingHints.VALUE_INTERPOLATION_BICUBIC;
+             double[] dstY) {
+        // This is sourced from the provided warpJAMA example code
 
         // Solves the two 3x3 systems of equations for the affine
         // mapping of the source triangle onto the destination triangle
@@ -151,16 +144,8 @@ public class MorphGridRendering {
         Graphics2D g2 = dest.createGraphics();
 
         // Set the aliasing and interpolation settings
-        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, ALIASING);
-        g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION, INTERPOLATION);
-
-        // If the destination image should be cleared before the
-        // triangle is rendered, fill the entire image with black
-        // (this is a boolean parameter)
-        if (clearBackground) {
-            g2.setColor(Color.BLACK);
-            g2.fill(new Rectangle(0, 0, dest.getWidth(), dest.getHeight()));
-        }
+        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BICUBIC);
 
         // Create the clip region in the destination image as a "path.
         // This region is the destination triangle, D
@@ -173,10 +158,12 @@ public class MorphGridRendering {
         // Apply the clip region so that any pixels that fall outside
         // this region will be clipped
         g2.clip(destPath);
+
         // Apply the affine transform, which will map the pixels in
         // the source triangle onto the destination image
         // the destination
         g2.setTransform(af);
+
         // Map the pixels from the source image into the destination
         // according to the destination image's graphics context
         g2.drawImage(src, 0, 0, null);

@@ -38,16 +38,15 @@ public class ImageMesh extends JPanel {
     ImageMesh() {
         super();
 
+        // Set our background color to black
+        setBackground(Color.black);
+
         // Create our vertex and triangle arrays
         vertices = new ArrayList<>();
         triangles = new ArrayList<>();
 
         // Generate our grid
         generateGrid();
-
-        // Set the background color to black and a reasonable starting size
-        setBackground(Color.black);
-        setPreferredSize(new Dimension(372, 372));
 
         // Set up our mouse listener for user clicks
         addMouseListener(new MouseAdapter() {
@@ -109,8 +108,8 @@ public class ImageMesh extends JPanel {
                     return;
 
                 // Otherwise, move our point to the mouse's current location
-                float newX = (float)(e.getX() / getSize().getWidth());
-                float newY = (float)(e.getY() / getSize().getHeight());
+                float newX = (float) (e.getX() / getSize().getWidth());
+                float newY = (float) (e.getY() / getSize().getHeight());
                 selected.setPosition(newX, newY);
 
                 // Then finally repaint
@@ -119,11 +118,9 @@ public class ImageMesh extends JPanel {
         });
     }
 
-    public int getWidthXX() { return image.getWidth(); }
-
-    public int getHeightXX() { return image.getHeight(); }
-
+    // Gets our source image with brightness applied
     public BufferedImage getImage() {
+        // If we have no image yet, return null
         if (image == null)
             return null;
 
@@ -131,13 +128,48 @@ public class ImageMesh extends JPanel {
         return op.filter(image, null);
     }
 
+    // Setter for the image background of this image mesh
+    public void setImage(BufferedImage image) {
+        // If the other image is already set, resize this one to match
+        if (image != null && other.image != null) {
+            // Create a buffered image matching the size of the other image
+            BufferedImage copy = new BufferedImage(other.image.getWidth(), other.image.getHeight(), other.image.getType());
+            copy.getGraphics();
+
+            // Get scale factors to match the other image
+            float scaleX = (float) other.image.getWidth() / image.getWidth();
+            float scaleY = (float) other.image.getHeight() / image.getHeight();
+
+            // Scale the image using a bilinear filter
+            AffineTransform scale = AffineTransform.getScaleInstance(scaleX, scaleY);
+            AffineTransformOp op = new AffineTransformOp(scale, AffineTransformOp.TYPE_BILINEAR);
+
+            // Set our image to the rescaled version of the input
+            this.image = op.filter(image, null);
+
+        } else {
+            // If the other image isn't set, just use the image as is
+            this.image = image;
+        }
+
+        // Re-generate our grid
+        generateGrid();
+
+        // Revalidate and repaint once image is set
+        revalidate();
+        repaint();
+    }
+
+    // Gets the current brightness value for this image mesh
     float getBrightness() {
         return brightness;
     }
 
+    // Sets the current brightness value for this image mesh, and repaints
     void setBrightness(float value) {
+        // Ignore if brightness is the same
         if (value == brightness)
-            return; // ignore
+            return;
 
         brightness = value;
         repaint();
@@ -195,92 +227,53 @@ public class ImageMesh extends JPanel {
         }
     }
 
-    // Setter for the image background of this image mesh
-    public void setImage(BufferedImage image) {
-        // If the other image is already set, resize this one to match
-        if (image != null && other.image != null) {
-            // Create a buffered image matching the size of the other image
-            BufferedImage copy = new BufferedImage(other.image.getWidth(), other.image.getHeight(), other.image.getType());
-            copy.getGraphics();
-
-            // Get scale factors to match the other image
-            float scaleX = (float) other.image.getWidth() / image.getWidth();
-            float scaleY = (float) other.image.getHeight() / image.getHeight();
-
-            // Scale the image using a bilinear filter
-            AffineTransform scale = AffineTransform.getScaleInstance(scaleX, scaleY);
-            AffineTransformOp op = new AffineTransformOp(scale, AffineTransformOp.TYPE_BILINEAR);
-
-            // Set our image to the rescaled version of the input
-            this.image = op.filter(image, null);
-
-        } else {
-            // If the other image isn't set, just use the image as is
-            this.image = image;
-        }
-
-        // Re-generate our grid
-        generateGrid();
-
-        // If the image isn't null, set our size to match, otherwise use the default
-        if (this.image != null)
-            setPreferredSize(new Dimension(this.image.getWidth(), this.image.getHeight()));
-        else
-            setPreferredSize(new Dimension(372, 372));
-
-        // Revalidate and repaint once image is set
-        revalidate();
-        repaint();
-    }
-
+    // Gets the preferred size of our component, overridden from JPanel
     @Override
     public Dimension getPreferredSize() {
-        Dimension ps = getParent().getSize();
+        // Get our parent's size
+        Dimension parentSize = getParent().getSize();
 
+        // If we have no image, simply return the size of our parent
         if (image == null)
-            return ps;
+            return parentSize;
 
-            float panelAspect = (float)ps.getWidth() / (float)ps.getHeight();
-            float imageAspect = (float)getWidthXX() / (float)getHeightXX();
+        // Calculate the aspect ratio of both our parent panel and image
+        float panelAspect = (float) parentSize.getWidth() / (float) parentSize.getHeight();
+        float imageAspect = (float) image.getWidth() / (float) image.getHeight();
 
-            float widthScale = (float)ps.getHeight() / (float)getHeightXX() * getWidthXX();
-            float heightScale = (float)ps.getWidth() / (float)getWidthXX() * getHeightXX();
+        // Get width and height scalars based on the opposite dimension
+        float widthScale = (float) parentSize.getHeight() / (float) image.getHeight() * image.getWidth();
+        float heightScale = (float) parentSize.getWidth() / (float) image.getWidth() * image.getHeight();
 
-            float nw = panelAspect > imageAspect ? (int)widthScale : (int)ps.getWidth();
-            float nh = panelAspect > imageAspect ? (int)ps.getHeight() : (int)heightScale;
+        // If our parent panel is too wide, use scaled width and max height
+        // If our parent panel is too tall, use max width and scaled height
+        float width = panelAspect > imageAspect ? (int) widthScale : (int) parentSize.getWidth();
+        float height = panelAspect > imageAspect ? (int) parentSize.getHeight() : (int) heightScale;
 
-            System.out.println(nw + " " + nh);
-
-            return new Dimension((int)nw, (int)nh);
+        // Return our desired width and height
+        return new Dimension((int) width, (int) height);
     }
 
-    // Overridden paint component method, renders our image, grid and handles
+    // Renders our image, grid and handles, overridden from JPanel
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
 
-        int nw = getWidth();
-        int nh = getHeight();
-
-        int nx = 0;
-        int ny = 0;
-
         // If we have an image, draw it using our getImage method as the source
         if (image != null) {
-            g.drawImage(getImage(), nx, ny, nw, nh, null);
+            g.drawImage(getImage(), 0, 0, getWidth(), getHeight(), null);
         }
 
-        // The size of our rendering area
-        Dimension size = new Dimension(nw, nh);
+        // Get the size of our rendering area
+        Dimension size = getSize();
 
         // Draw our triangle grid
-        Vertex offset = new Vertex(nx / (float)size.getWidth(), ny / (float)size.getHeight());
         MorphGridRendering.DrawMesh(g, size, vertices, triangles);
 
         // Then, for every point in our grid
         for (int i = 0; i < vertices.size(); i++) {
             // Get our corresponding vertex
-            Vertex vertex = vertices.get(i).add(offset);
+            Vertex vertex = vertices.get(i);
 
             // Check if it is the selected on either this image mesh or our partner and set color accordingly
             if (vertex == selected || i == otherSelectedIndex)

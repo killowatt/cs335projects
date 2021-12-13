@@ -25,7 +25,7 @@ class ImageMeshPanel extends JPanel {
 
         JPanel leftimgcontrols = new JPanel();
 
-        JSlider lBrightnessSlider = new JSlider(JSlider.HORIZONTAL, 0, 1000, 100);
+        JSlider lBrightnessSlider = new JSlider(JSlider.HORIZONTAL, 0, 1000, (int)(imageMesh.getBrightness() * 100.0f));
         lBrightnessSlider.setMajorTickSpacing(100);
         lBrightnessSlider.setPaintTicks(true);
         lBrightnessSlider.setSnapToTicks(false);
@@ -38,15 +38,12 @@ class ImageMeshPanel extends JPanel {
 
         GridBagConstraints constr = new GridBagConstraints();
 
-        //constr.weightx = 1.0f;
-        //constr.weighty = 1.0f;
+        JPanel imagePanelThing = new JPanel(new GridBagLayout());
+        imagePanelThing.setPreferredSize(new Dimension(372, 372));
+        imagePanelThing.setBackground(Color.black);
+        imagePanelThing.add(imageMesh);
 
-        JPanel testPanel = new JPanel(new GridBagLayout());
-        testPanel.setPreferredSize(new Dimension(372, 372));
-        testPanel.setBackground(Color.black);
-        testPanel.add(imageMesh);
-
-        add(testPanel, czs);
+        add(imagePanelThing, czs);
 
         constr.gridx = 0;
         constr.gridy = 1;
@@ -90,7 +87,6 @@ class JMorph extends JFrame {
         // Main panel
         JPanel panel = new JPanel();
         panel.setLayout(new GridBagLayout());
-
 
         // Images panel
         JPanel imagesPanel = new JPanel();
