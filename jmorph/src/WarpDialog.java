@@ -34,7 +34,7 @@ class PreviewPanel extends JPanel {
     float time = 0.0f;
 
     // The vertices and triangles of our grid
-    ArrayList<Point2D> vertices;
+    ArrayList<Vertex> vertices;
     ArrayList<Integer> triangles;
 
     BufferedImage warped;
@@ -67,8 +67,8 @@ class PreviewPanel extends JPanel {
 
         // Make deep copies of all the vertices...
         for (int i = 0; i < vertices.size(); i++) {
-            Point2D original = first.vertices.get(i);
-            Point2D copy = new Point2D.Double(original.getX(), original.getY());
+            Vertex original = first.vertices.get(i);
+            Vertex copy = new Vertex(original.x, original.y);
             vertices.set(i, copy);
         }
 
@@ -89,13 +89,13 @@ class PreviewPanel extends JPanel {
 
                 // Interpolate between the points of the first and second image
                 for (int i = 0; i < vertices.size(); i++) {
-                    Point2D firstVertex = first.vertices.get(i);
-                    Point2D secondVertex = second.vertices.get(i);
+                    Vertex firstVertex = first.vertices.get(i);
+                    Vertex secondVertex = second.vertices.get(i);
 
-                    double x = firstVertex.getX() + (secondVertex.getX() - firstVertex.getX()) * time;
-                    double y = firstVertex.getY() + (secondVertex.getY() - firstVertex.getY()) * time;
+                    float x = firstVertex.x + (secondVertex.x - firstVertex.x) * time;
+                    float y = firstVertex.y + (secondVertex.y - firstVertex.y) * time;
 
-                    vertices.get(i).setLocation(x, y);
+                    vertices.get(i).setPosition(x, y);
                 }
 
                 // Repaint the panel and increment the timestep
@@ -116,12 +116,8 @@ class PreviewPanel extends JPanel {
                         JOptionPane.showMessageDialog(null, frames + " frames written to disk", "Render Complete", JOptionPane.INFORMATION_MESSAGE);
 
                     for (int i = 0; i < vertices.size(); i++) {
-                        Point2D finalVertex = second.vertices.get(i);
-
-                        double finalX = finalVertex.getX();
-                        double finalY = finalVertex.getY();
-
-                        vertices.get(i).setLocation(finalX, finalY);
+                        Vertex finalVertex = second.vertices.get(i);
+                        vertices.get(i).setPosition(finalVertex.x, finalVertex.y);
                     }
 
                     time = 1.0f;
@@ -138,7 +134,7 @@ class PreviewPanel extends JPanel {
         timer.stop();
     }
 
-    BufferedImage getwarp(BufferedImage srcimg, ArrayList<Point2D> from, ArrayList<Point2D> to) {
+    BufferedImage getwarp(BufferedImage srcimg, ArrayList<Vertex> from, ArrayList<Vertex> to) {
         BufferedImage result = new BufferedImage(firs.getWidthXX(), firs.getHeightXX(), BufferedImage.TYPE_INT_RGB);
 
         double scaleX = getSize().width;
@@ -154,21 +150,21 @@ class PreviewPanel extends JPanel {
             int i2 = triangles.get(i + 1);
             int i3 = triangles.get(i + 2);
 
-            srcX[0] = from.get(i1).getX() * scaleX;
-            srcX[1] = from.get(i2).getX() * scaleX;
-            srcX[2] = from.get(i3).getX() * scaleX;
+            srcX[0] = from.get(i1).x * scaleX;
+            srcX[1] = from.get(i2).x * scaleX;
+            srcX[2] = from.get(i3).x * scaleX;
 
-            srcY[0] = from.get(i1).getY() * scaleY;
-            srcY[1] = from.get(i2).getY() * scaleY;
-            srcY[2] = from.get(i3).getY() * scaleY;
+            srcY[0] = from.get(i1).y * scaleY;
+            srcY[1] = from.get(i2).y * scaleY;
+            srcY[2] = from.get(i3).y * scaleY;
 
-            dstX[0] = to.get(i1).getX() * scaleX;
-            dstX[1] = to.get(i2).getX() * scaleX;
-            dstX[2] = to.get(i3).getX() * scaleX;
+            dstX[0] = to.get(i1).x * scaleX;
+            dstX[1] = to.get(i2).x * scaleX;
+            dstX[2] = to.get(i3).x * scaleX;
 
-            dstY[0] = to.get(i1).getY() * scaleY;
-            dstY[1] = to.get(i2).getY() * scaleY;
-            dstY[2] = to.get(i3).getY() * scaleY;
+            dstY[0] = to.get(i1).y * scaleY;
+            dstY[1] = to.get(i2).y * scaleY;
+            dstY[2] = to.get(i3).y * scaleY;
 
             MorphGridRendering.WarpTriangle(srcimg, result, srcX, srcY, dstX, dstY, null, null, false);
         }
@@ -219,7 +215,7 @@ class PreviewPanel extends JPanel {
         MorphGridRendering.DrawMesh(g, size, vertices, triangles);
 
         // Then, for every point in our grid
-        for (Point2D vertex : vertices) {
+        for (Vertex vertex : vertices) {
             // Set the color for the handles
             g.setColor(Color.cyan);
 

@@ -13,7 +13,7 @@ import java.util.ArrayList;
 // Image mesh panel, handles rendering an image with a triangle grid overlay with controllable handles
 public class ImageMesh extends JPanel {
     // The vertices and triangle indices of our grid
-    public ArrayList<Point2D> vertices;
+    public ArrayList<Vertex> vertices;
     public ArrayList<Integer> triangles;
 
     // The other image, a bit hacky. We could try using a listener in the future
@@ -29,7 +29,7 @@ public class ImageMesh extends JPanel {
     private float brightness = 1.0f;
 
     // The currently selected point of this panel
-    private Point2D selected = null;
+    private Vertex selected = null;
 
     // The currently selected point of our partner panel
     private int otherSelectedIndex = -1;
@@ -61,14 +61,14 @@ public class ImageMesh extends JPanel {
                 // Then, for each vertex...
                 for (int i = 0; i < vertices.size(); i++) {
                     // Get that vertex
-                    Point2D vertex = vertices.get(i);
+                    Vertex vertex = vertices.get(i);
 
                     // Scale it to our component size
                     double scaleX = getSize().width;
                     double scaleY = getSize().height;
 
                     // Create a point using our scaled location
-                    Point2D scaled = new Point2D.Double(vertex.getX() * scaleX, vertex.getY() * scaleY);
+                    Point2D scaled = new Point2D.Double(vertex.x * scaleX, vertex.y * scaleY);
 
                     // Then see if the distance between our click and this point is less than our point size
                     // We add one to the radius to make points easier to click
@@ -109,9 +109,9 @@ public class ImageMesh extends JPanel {
                     return;
 
                 // Otherwise, move our point to the mouse's current location
-                double newX = e.getX() / getSize().getWidth();
-                double newY = e.getY() / getSize().getHeight();
-                selected.setLocation(newX, newY);
+                float newX = (float)(e.getX() / getSize().getWidth());
+                float newY = (float)(e.getY() / getSize().getHeight());
+                selected.setPosition(newX, newY);
 
                 // Then finally repaint
                 repaint();
@@ -170,7 +170,7 @@ public class ImageMesh extends JPanel {
         for (int x = 0; x <= gridSize; x++) {
             for (int y = 0; y <= gridSize; y++) {
                 // Simply create a point at current x and y divided by grid size
-                Point2D vertex = new Point2D.Float((float) x / gridSize, (float) y / gridSize);
+                Vertex vertex = new Vertex((float) x / gridSize, (float) y / gridSize);
                 vertices.add(vertex);
             }
         }
@@ -233,6 +233,27 @@ public class ImageMesh extends JPanel {
         repaint();
     }
 
+    @Override
+    public Dimension getPreferredSize() {
+        Dimension ps = getParent().getSize();
+
+        if (image == null)
+            return ps;
+
+            float panelAspect = (float)ps.getWidth() / (float)ps.getHeight();
+            float imageAspect = (float)getWidthXX() / (float)getHeightXX();
+
+            float widthScale = (float)ps.getHeight() / (float)getHeightXX() * getWidthXX();
+            float heightScale = (float)ps.getWidth() / (float)getWidthXX() * getHeightXX();
+
+            float nw = panelAspect > imageAspect ? (int)widthScale : (int)ps.getWidth();
+            float nh = panelAspect > imageAspect ? (int)ps.getHeight() : (int)heightScale;
+
+            System.out.println(nw + " " + nh);
+
+            return new Dimension((int)nw, (int)nh);
+    }
+
     // Overridden paint component method, renders our image, grid and handles
     @Override
     protected void paintComponent(Graphics g) {
@@ -241,22 +262,11 @@ public class ImageMesh extends JPanel {
         int nw = getWidth();
         int nh = getHeight();
 
+        int nx = 0;
+        int ny = 0;
+
         // If we have an image, draw it using our getImage method as the source
         if (image != null) {
-            float panelAspect = (float)getWidth() / (float)getHeight();
-            float imageAspect = (float)image.getWidth() / (float)image.getHeight();
-
-            float widthScale = (float)getHeight() / (float)image.getHeight() * image.getWidth();
-            float heightScale = (float)getWidth() / (float)image.getWidth() * image.getHeight();
-
-            nw = panelAspect > imageAspect ? (int)widthScale : getWidth();
-            nh = panelAspect > imageAspect ? getHeight() : (int)heightScale;
-
-            int nx = panelAspect > imageAspect ? getWidth() / 2 - nw / 2: 0;
-            int ny = panelAspect > imageAspect ? 0 : getHeight() / 2 - nh / 2;
-
-            System.out.println(nw + " " + nh + "  pos " + nx + " " + ny);
-
             g.drawImage(getImage(), nx, ny, nw, nh, null);
         }
 
@@ -264,12 +274,13 @@ public class ImageMesh extends JPanel {
         Dimension size = new Dimension(nw, nh);
 
         // Draw our triangle grid
+        Vertex offset = new Vertex(nx / (float)size.getWidth(), ny / (float)size.getHeight());
         MorphGridRendering.DrawMesh(g, size, vertices, triangles);
 
         // Then, for every point in our grid
         for (int i = 0; i < vertices.size(); i++) {
             // Get our corresponding vertex
-            Point2D vertex = vertices.get(i);
+            Vertex vertex = vertices.get(i).add(offset);
 
             // Check if it is the selected on either this image mesh or our partner and set color accordingly
             if (vertex == selected || i == otherSelectedIndex)
