@@ -38,7 +38,7 @@ public class MorphDialog extends JDialog {
     // Dialog constructor, takes two image meshes, a total frame count, and a preview flag
     MorphDialog(ImageMesh start, ImageMesh end, int totalFrames, boolean isPreview) {
         // Original dialog constructor, make sure we're a modal dialog
-        super((Frame) null, true);
+        super((Frame) null, isPreview ? "Preview" : "Render", true);
 
         // Dispose of this dialog when closed
         setDefaultCloseOperation(DISPOSE_ON_CLOSE);

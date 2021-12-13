@@ -15,6 +15,7 @@ class ImageMeshPanel extends JPanel {
         // Use a grid bag layout
         setLayout(new GridBagLayout());
 
+
         // Create our JPanel for user controls
         JPanel controls = new JPanel();
 
@@ -22,7 +23,7 @@ class ImageMeshPanel extends JPanel {
         JButton openButton = new JButton("Open");
 
         // Create our brightness slider
-        JSlider brightnessSlider = new JSlider(JSlider.HORIZONTAL, 0, 1000, (int)(imageMesh.getBrightness() * 100.0f));
+        JSlider brightnessSlider = new JSlider(JSlider.HORIZONTAL, 0, 1000, (int) (imageMesh.getBrightness() * 100.0f));
         brightnessSlider.setMajorTickSpacing(100);
         brightnessSlider.setPaintTicks(true);
         brightnessSlider.setSnapToTicks(false);
@@ -31,6 +32,7 @@ class ImageMeshPanel extends JPanel {
         controls.add(openButton);
         controls.add(new JLabel("Brightness"));
         controls.add(brightnessSlider);
+
 
         // Create our JPanel that holds our ImageMesh panel
         JPanel imageMeshContainer = new JPanel(new GridBagLayout());
@@ -55,12 +57,12 @@ class ImageMeshPanel extends JPanel {
         // Add our user controls to this panel
         add(controls, controlConstraints);
 
+
         // Set up our open file button to set the image mesh image
         openButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 imageMesh.setImage(getImageInput(morph));
-                morph.pack();
             }
         });
 
