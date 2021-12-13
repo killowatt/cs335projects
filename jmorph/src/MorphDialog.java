@@ -6,36 +6,34 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 
+// Morph dialog class, responsible for showing the final morph and potentially saving it to file
 public class MorphDialog extends JDialog {
     // The vertices and triangles of our grid
     private final ArrayList<Vertex> vertices;
     private final ArrayList<Integer> triangles;
 
-    // Start and end image mesh objects
-    private ImageMesh startImage;
-    private ImageMesh endImage;
-
-    // Thread object we use to render images
-    Thread thread;
-
-    // Last fully rendered frame
-    private BufferedImage lastFrame = null;
-
     // Total number of frames
     private final int totalFrames;
-
-    // The current frame of the render
-    private int currentFrame = 0;
 
     // Width and height of our renders
     private final int width;
     private final int height;
 
-    // Internal flag, when set will stop rendering of the remaining frames (but will finish the current one)
-    private boolean stopRendering = false;
-
     // Preview flag, when set will draw handles and prevents saving to file
     private final boolean isPreview;
+
+    // Start and end image mesh objects
+    private final ImageMesh startImage;
+    private final ImageMesh endImage;
+
+    // Last fully rendered frame
+    private BufferedImage lastFrame = null;
+
+    // The current frame of the render
+    private int currentFrame = 0;
+
+    // Internal flag, when set will stop rendering of the remaining frames (but will finish the current one)
+    private boolean stopRendering = false;
 
     // Dialog constructor, takes two image meshes, a total frame count, and a preview flag
     MorphDialog(ImageMesh start, ImageMesh end, int totalFrames, boolean isPreview) {
@@ -54,8 +52,8 @@ public class MorphDialog extends JDialog {
         this.isPreview = isPreview;
 
         // Set our width and height to match the starting image
-        this.width = startImage.getWidth();
-        this.height = startImage.getHeight();
+        this.width = startImage.getImageWidth();
+        this.height = startImage.getImageHeight();
 
         // Create a copy of the first image's vertices as a starting point
         vertices = new ArrayList<>(startImage.vertices);
@@ -109,20 +107,30 @@ public class MorphDialog extends JDialog {
         add(previewPanel);
 
         // Create our thread to render frames
-        thread = new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    // While we still have frames left to draw, assuming we shouldn't stop rendering...
-                    while (currentFrame < totalFrames && !stopRendering) {
-                        // Render the next frame and order a repaint
-                        renderFrame();
-                        previewPanel.repaint();
+        // While we still have frames left to draw, assuming we shouldn't stop rendering...
+        // Render the next frame and order a repaint
+        // Increment frame counter
+        // Once the render is finished or stopped, show a dialog
+        // Thread object we use to render images
+        Thread thread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                // While we still have frames left to draw, assuming we shouldn't stop rendering...
+                while (currentFrame < totalFrames && !stopRendering) {
+                    // Render the next frame and order a repaint
+                    renderFrame();
+                    previewPanel.repaint();
 
-                        // Increment frame counter
-                        currentFrame++;
-                    }
+                    // Increment frame counter
+                    currentFrame++;
                 }
-            });
+
+                // Once the render is finished or stopped, show a dialog
+                if (!isPreview) {
+                    JOptionPane.showMessageDialog(null, currentFrame + " frames written to disk", "Render Complete", JOptionPane.INFORMATION_MESSAGE);
+                }
+            }
+        });
 
         // Start rendering!
         thread.start();
@@ -181,36 +189,46 @@ public class MorphDialog extends JDialog {
         // Create a result image buffer to store our morph into
         BufferedImage result = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
 
+        // For each triangle in our array of indices...
         for (int i = 0; i < triangles.size(); i += 3) {
+            // Set up three vertices for both source and destination triangles
             Vertex[] source = new Vertex[3];
             Vertex[] destination = new Vertex[3];
 
+            // Get the indices for the three triangles...
             int i1 = triangles.get(i);
             int i2 = triangles.get(i + 1);
             int i3 = triangles.get(i + 2);
 
+            // Then get the triangles given the indices, scaling them to the width and height of the image
             source[0] = from.get(i1).scale(width, height);
             source[1] = from.get(i2).scale(width, height);
             source[2] = from.get(i3).scale(width, height);
 
+            // Do the same for the destination triangle
             destination[0] = to.get(i1).scale(width, height);
             destination[1] = to.get(i2).scale(width, height);
             destination[2] = to.get(i3).scale(width, height);
 
+            // Call our morph triangle method, writing into our result image
             MorphGridRendering.MorphTriangle(image, result, source, destination);
         }
 
+        // Return the resulting image
         return result;
     }
 
     // Overlay the end image over the start image with a given alpha value
     BufferedImage overlayImage(BufferedImage startImage, BufferedImage endImage, float alpha) {
+        // Create an image buffer to write our frame into
         BufferedImage frame = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
         Graphics2D g2D = frame.createGraphics();
 
+        // If we have a start image, draw it into our frame
         if (startImage != null)
             g2D.drawImage(startImage, 0, 0, width, height, null);
 
+        // If we have an end image, draw it with the provided alpha value
         if (endImage != null) {
             AlphaComposite ac = AlphaComposite.getInstance(AlphaComposite.SRC_OVER, alpha);
             g2D.setComposite(ac);

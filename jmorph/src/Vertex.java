@@ -3,10 +3,6 @@ public class Vertex {
     public float x;
     public float y;
 
-    // Default constructor
-    Vertex() {
-    }
-
     // Constructor with initial values
     Vertex(float x, float y) {
         setPosition(x, y);
@@ -18,7 +14,9 @@ public class Vertex {
         this.y = y;
     }
 
-    Vertex copy() { return new Vertex(x, y); }
+    Vertex copy() {
+        return new Vertex(x, y);
+    }
 
     // Returns a scaled copy of this vertex
     Vertex scale(float scalarX, float scalarY) {

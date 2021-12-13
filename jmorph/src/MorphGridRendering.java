@@ -148,10 +148,10 @@ public class MorphGridRendering {
         // Create the clip region in the destination image as a "path.
         // This region is the destination triangle, D
         GeneralPath destPath = new GeneralPath(GeneralPath.WIND_EVEN_ODD);
-        destPath.moveTo((float) destinationVertices[0].x, (float) destinationVertices[0].y);
-        destPath.lineTo((float) destinationVertices[1].x, destinationVertices[1].y);
-        destPath.lineTo((float) destinationVertices[2].x, destinationVertices[2].y);
-        destPath.lineTo((float) destinationVertices[0].x, destinationVertices[0].y);
+        destPath.moveTo(destinationVertices[0].x, destinationVertices[0].y);
+        destPath.lineTo(destinationVertices[1].x, destinationVertices[1].y);
+        destPath.lineTo(destinationVertices[2].x, destinationVertices[2].y);
+        destPath.lineTo(destinationVertices[0].x, destinationVertices[0].y);
 
         // Apply the clip region so that any pixels that fall outside
         // this region will be clipped

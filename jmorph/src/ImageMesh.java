@@ -53,10 +53,6 @@ public class ImageMesh extends JPanel {
             // Handler for clicks
             @Override
             public void mousePressed(MouseEvent e) {
-                // Get the location of the click
-                final int x = e.getX();
-                final int y = e.getY();
-
                 // Then, for each vertex...
                 for (int i = 0; i < vertices.size(); i++) {
                     // Get that vertex
@@ -128,9 +124,6 @@ public class ImageMesh extends JPanel {
         return op.filter(image, null);
     }
 
-    public int getImageWidth() { return image.getWidth(); }
-    public int getImageHeight() { return image.getHeight(); }
-
     // Setter for the image background of this image mesh
     public void setImage(BufferedImage image) {
         // If the other image is already set, resize this one to match
@@ -161,6 +154,18 @@ public class ImageMesh extends JPanel {
         // Revalidate and repaint once image is set
         revalidate();
         repaint();
+    }
+
+    public int getImageWidth() {
+        return image.getWidth();
+    }
+
+    public int getImageHeight() {
+        return image.getHeight();
+    }
+
+    public boolean hasImage() {
+        return image != null;
     }
 
     // Gets the current brightness value for this image mesh

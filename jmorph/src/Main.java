@@ -9,74 +9,14 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 
-// TODO: test not providing images etc
-
-class ImageMeshPanel extends JPanel {
-    ImageMeshPanel(ImageMesh imageMesh, JMorph morph) {
-        setLayout(new GridBagLayout());
-
-
-
-        GridBagConstraints czs = new GridBagConstraints();
-        czs.fill = GridBagConstraints.BOTH;
-        czs.weighty = 1.0f;
-        czs.weightx = 1.0f;
-
-
-
-        JPanel leftimgcontrols = new JPanel();
-
-        JSlider lBrightnessSlider = new JSlider(JSlider.HORIZONTAL, 0, 1000, (int)(imageMesh.getBrightness() * 100.0f));
-        lBrightnessSlider.setMajorTickSpacing(100);
-        lBrightnessSlider.setPaintTicks(true);
-        lBrightnessSlider.setSnapToTicks(false);
-
-        JButton openButton = new JButton("Open");
-
-        leftimgcontrols.add(openButton);
-        leftimgcontrols.add(new JLabel("Brightness"));
-        leftimgcontrols.add(lBrightnessSlider);
-
-        GridBagConstraints constr = new GridBagConstraints();
-
-        JPanel imagePanelThing = new JPanel(new GridBagLayout());
-        imagePanelThing.setPreferredSize(new Dimension(372, 372));
-        imagePanelThing.setBackground(Color.black);
-        imagePanelThing.add(imageMesh);
-
-        add(imagePanelThing, czs);
-
-        constr.gridx = 0;
-        constr.gridy = 1;
-
-        add(leftimgcontrols, constr);
-
-
-        lBrightnessSlider.addChangeListener(new ChangeListener() {
-            @Override
-            public void stateChanged(ChangeEvent e) {
-                float value = lBrightnessSlider.getValue() / 100.0f;
-                imageMesh.setBrightness(value);
-            }
-        });
-
-        openButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                imageMesh.setImage(morph.getImageInput());
-                morph.pack();
-            }
-        });
-    }
-}
-
 // Main JMorph frame, handles the creation and layout of the main window
 class JMorph extends JFrame {
+    // Left and right image mesh objects
     ImageMesh leftImageMesh;
     ImageMesh rightImageMesh;
 
+    // Our spinner
     JSpinner frameCountSpinner;
-    JSpinner delaySpinner;
 
     JMorph() {
         // Set our window title to JMorph
@@ -167,14 +107,14 @@ class JMorph extends JFrame {
         previewButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                showpreview(false);
+                showMorphDialog(true);
             }
         });
 
         renderButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                showpreview(true);
+                showMorphDialog(false);
             }
         });
 
@@ -193,45 +133,17 @@ class JMorph extends JFrame {
         setVisible(true);
     }
 
-    // Helper method to query the user for an image
-    BufferedImage getImageInput() {
-        // Create and show our file dialog
-        FileDialog dialog = new FileDialog(this, "Choose an image", FileDialog.LOAD);
-        dialog.setVisible(true);
-
-        // If the directory or file name are null, assume the user canceled
-        if (dialog.getDirectory() == null || dialog.getFile() == null)
-            return null;
-
-        // Create the full path from the directory and the file name
-        String fileName = dialog.getDirectory() + dialog.getFile();
-
-        try {
-            // Try to load the file from disk
-            BufferedImage image = ImageIO.read(new File(fileName));
-
-            // If we succeeded reading the file but buffered image is null, the file is invalid
-            // Show an error
-            if (image == null) {
-                JOptionPane.showMessageDialog(this, "Failed to load image!", "Error",
-                        JOptionPane.ERROR_MESSAGE);
-                return null;
-            }
-
-            return image;
-        } catch (IOException ex) {
-            // If we failed to read the file from disk, show an error
-            JOptionPane.showMessageDialog(this, "Failed to load file!", "Error",
-                    JOptionPane.ERROR_MESSAGE);
+    void showMorphDialog(boolean isPreview) {
+        // If we don't have both images, show an error and return
+        if (!leftImageMesh.hasImage() || !rightImageMesh.hasImage()) {
+            JOptionPane.showMessageDialog(this, "You need to load both images!", "Error", JOptionPane.ERROR_MESSAGE);
+            return;
         }
-        return null;
-    }
 
-    void showpreview(boolean isRender) {
-        // Get our total frames and frame delay from the respective spinners
+        // Get our total frame count from the spinner
         int frames = (int) frameCountSpinner.getValue();
 
-        MorphDialog pv = new MorphDialog(leftImageMesh, rightImageMesh, frames, isRender);
+        MorphDialog morphDialog = new MorphDialog(leftImageMesh, rightImageMesh, frames, isPreview);
     }
 }
 
